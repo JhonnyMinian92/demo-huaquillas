@@ -1,0 +1,1070 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitor Contable - Aguas Huaquillas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ink: '#172033',
+              line: '#d9e1ea',
+              mist: '#f4f7fb',
+              water: '#0f6f9f',
+            },
+            boxShadow: {
+              panel: '0 18px 45px rgba(23, 32, 51, 0.08)',
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: #bac7d6 transparent;
+      }
+
+      body {
+        min-width: 320px;
+      }
+
+      .status-dot {
+        box-shadow: 0 0 0 4px currentColor;
+      }
+
+      .flow-bar {
+        height: var(--bar-height);
+      }
+
+      @media (max-width: 1023px) {
+        body {
+          height: auto;
+        }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-mist font-sans text-ink">
+    <div class="flex min-h-screen flex-col">
+      <header class="flex items-center justify-between bg-gradient-to-r from-blue-900 to-blue-800 p-4 shadow-md">
+        <div class="flex items-center gap-3">
+          <div class="text-3xl">💧</div>
+          <div>
+            <h1 class="text-lg font-bold text-white">AGUAS HUAQUILLAS</h1>
+            <p class="text-xs text-blue-100">Sistema Contable</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <p class="text-sm font-semibold text-white">Ana Torres: <span id="nombreContable">Contadora</span></p>
+          <p class="text-xs text-blue-100">Sesión Abierta - <span id="horaActual">--:--</span></p>
+        </div>
+      </header>
+
+      <section class="border-b border-line bg-white px-4 py-3 lg:px-6">
+        <div class="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4" id="metricasCompactas"></div>
+      </section>
+
+      <main id="layoutPrincipal" class="grid flex-1 grid-cols-1 gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_390px] lg:p-6">
+        <section class="flex flex-col gap-4">
+          <section class="rounded-lg border border-line bg-white shadow-panel">
+            <div class="border-b border-line p-4">
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Flujo del día</p>
+                  <h3 class="mt-1 text-base font-bold text-ink">Ingresos facturados y cierre</h3>
+                </div>
+                <button onclick="simularRecepcionSri()" class="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-line px-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50" title="Actualizar flujo">
+                  <i data-lucide="refresh-cw" class="h-4 w-4"></i>
+                  Actualizar
+                </button>
+              </div>
+            </div>
+            <div class="p-4" id="flujoDia"></div>
+          </section>
+
+          <section class="rounded-lg border border-line bg-white shadow-panel">
+            <div class="flex flex-col gap-4 border-b border-line p-4 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Hoy · 09 mayo 2026</p>
+                <h2 class="mt-1 text-xl font-bold text-ink">Comprobantes electrónicos</h2>
+              </div>
+
+              <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <label class="relative block sm:w-72">
+                  <i data-lucide="search" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></i>
+                  <input id="busqueda" type="search" placeholder="Factura, cliente, RUC o correo" class="h-10 w-full rounded-lg border border-line bg-slate-50 pl-9 pr-3 text-sm outline-none transition focus:border-water focus:bg-white focus:ring-4 focus:ring-cyan-100" oninput="aplicarFiltros()" />
+                </label>
+                <button onclick="limpiarFiltros()" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-line bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50" title="Limpiar filtros">
+                  <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
+                  Limpiar
+                </button>
+              </div>
+            </div>
+
+            <div class="grid gap-3 border-b border-line p-3 xl:grid-cols-[minmax(0,1fr)_220px]">
+              <div class="flex min-w-0 flex-wrap gap-2" id="filtrosEstado"></div>
+              <select id="filtroPago" onchange="aplicarFiltros()" class="h-9 rounded-lg border border-line bg-white px-3 text-sm font-semibold text-slate-700 outline-none focus:border-water focus:ring-4 focus:ring-cyan-100">
+                <option value="todos">Todos los pagos</option>
+                <option value="pagada">Pagadas</option>
+                <option value="pendiente">Pendientes de pago</option>
+                <option value="parcial">Pagos parciales</option>
+                <option value="anulada">Anuladas</option>
+              </select>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[1080px] border-collapse text-left text-sm">
+                <thead class="bg-slate-50 text-xs font-bold uppercase tracking-wide text-slate-500">
+                  <tr>
+                    <th class="border-b border-line px-4 py-3">Factura</th>
+                    <th class="border-b border-line px-4 py-3">Cliente</th>
+                    <th class="border-b border-line px-4 py-3">Pago</th>
+                    <th class="border-b border-line px-4 py-3">Estado SRI</th>
+                    <th class="border-b border-line px-4 py-3 text-right">Total</th>
+                    <th class="border-b border-line px-4 py-3 text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaFacturas" class="divide-y divide-slate-100 bg-white"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section>
+            <div class="rounded-lg border border-line bg-white shadow-panel">
+              <div class="flex items-center justify-between border-b border-line p-4">
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Bitácora</p>
+                  <h3 class="mt-1 text-base font-bold text-ink">Bitácora anual 2026</h3>
+                </div>
+                <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600" id="totalEventos">0 eventos</span>
+              </div>
+              <div id="bitacora" class="p-2"></div>
+            </div>
+          </section>
+        </section>
+
+        <aside id="panelDetalle" class="flex flex-col rounded-lg border border-line bg-white shadow-panel lg:self-start">
+          <div class="flex items-start justify-between gap-3 border-b border-line p-4">
+            <div class="min-w-0">
+              <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Detalle</p>
+              <h2 class="mt-1 truncate text-lg font-bold text-ink" id="detalleNumero">Seleccione una factura</h2>
+            </div>
+            <button onclick="cerrarDetalle()" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-line text-slate-600 transition hover:bg-slate-50" title="Cerrar detalle" aria-label="Cerrar detalle">
+              <i data-lucide="x" class="h-4 w-4"></i>
+            </button>
+          </div>
+
+          <div id="detalleFactura" class="flex-1"></div>
+        </aside>
+      </main>
+    </div>
+
+    <div id="modalAccion" class="fixed inset-0 z-50 hidden items-center justify-center bg-ink/45 p-4">
+      <div class="w-full max-w-2xl overflow-hidden rounded-lg bg-white shadow-2xl">
+        <div class="flex items-center justify-between border-b border-line p-4">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-500" id="modalEtiqueta">Acción</p>
+            <h3 class="text-lg font-bold text-ink" id="modalTitulo">Detalle</h3>
+          </div>
+          <button onclick="cerrarModal()" class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-line text-slate-600 hover:bg-slate-50" title="Cerrar">
+            <i data-lucide="x" class="h-4 w-4"></i>
+          </button>
+        </div>
+        <div class="max-h-[70vh] overflow-y-auto p-4" id="modalContenido"></div>
+      </div>
+    </div>
+
+    <script>
+      const estadoSriConfig = {
+        todos: { label: 'Todos', short: 'Todos', className: 'bg-slate-100 text-slate-700 border-slate-200', dot: 'text-slate-400' },
+        autorizada: { label: 'Autorizadas', short: 'Aut.', className: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'text-emerald-500' },
+        pendiente: { label: 'Pendientes', short: 'Pend.', className: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'text-amber-500' },
+        error: { label: 'Con error', short: 'Error', className: 'bg-rose-50 text-rose-700 border-rose-200', dot: 'text-rose-500' },
+        recibida: { label: 'Recibidas SRI', short: 'Rec.', className: 'bg-cyan-50 text-cyan-700 border-cyan-200', dot: 'text-cyan-500' },
+        anulada: { label: 'Anuladas', short: 'Anul.', className: 'bg-slate-200 text-slate-700 border-slate-300', dot: 'text-slate-500' },
+      };
+
+      const pagoConfig = {
+        pagada: { label: 'Pagada', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+        pendiente: { label: 'Pendiente', className: 'bg-orange-50 text-orange-700 border-orange-200' },
+        parcial: { label: 'Parcial', className: 'bg-sky-50 text-sky-700 border-sky-200' },
+        anulada: { label: 'Anulada', className: 'bg-slate-100 text-slate-600 border-slate-200' },
+      };
+
+      const facturas = [
+        {
+          id: '001-001-000215',
+          cliente: 'María Gómez Vélez',
+          ruc: '0706323193',
+          email: 'maria.gomez@mail.com',
+          total: 18.5,
+          pagado: 18.5,
+          estadoPago: 'pagada',
+          estadoSri: 'autorizada',
+          hora: '08:12',
+          metodo: 'Efectivo',
+          claveAcceso: '0905202601070632319300120010010002151234567811',
+          autorizacion: '0905202601070632319300120010010002151234567811',
+          ultimoEnvio: '08:15',
+          items: ['Agua potable marzo', 'Mora regularizada'],
+        },
+        {
+          id: '001-001-000216',
+          cliente: 'Empresa XYZ S.A.',
+          ruc: '0992874412001',
+          email: 'contabilidad@xyz.ec',
+          total: 145,
+          pagado: 0,
+          estadoPago: 'pendiente',
+          estadoSri: 'error',
+          hora: '08:29',
+          metodo: 'Crédito',
+          claveAcceso: '0905202601099287441200120010010002161234567813',
+          autorizacion: '',
+          error: 'CLAVE DE ACCESO REGISTRADA. El comprobante fue recibido antes por el SRI.',
+          items: ['Servicio comercial', 'Reconexión de servicio'],
+        },
+        {
+          id: '001-001-000217',
+          cliente: 'Ilustre Municipio de Huaquillas',
+          ruc: '0760000690001',
+          email: 'tesoreria@gadhuaquillas.gob.ec',
+          total: 250.75,
+          pagado: 125,
+          estadoPago: 'parcial',
+          estadoSri: 'pendiente',
+          hora: '09:03',
+          metodo: 'Transferencia',
+          claveAcceso: '0905202601076000069000120010010002171234567814',
+          autorizacion: '',
+          error: 'En cola asíncrona. Pendiente de consulta de autorización.',
+          items: ['Consumo edificio municipal', 'Instalación de servicio'],
+        },
+        {
+          id: '001-001-000218',
+          cliente: 'Comercial Los Andes S.A.',
+          ruc: '0791784556001',
+          email: 'facturas@losandes.ec',
+          total: 67.2,
+          pagado: 67.2,
+          estadoPago: 'pagada',
+          estadoSri: 'recibida',
+          hora: '09:21',
+          metodo: 'Tarjeta',
+          claveAcceso: '0905202601079178455600120010010002181234567815',
+          autorizacion: '',
+          error: 'Comprobante recibido. Falta confirmar autorización.',
+          items: ['Consumo comercial abril'],
+        },
+        {
+          id: '001-001-000219',
+          cliente: 'Juan Carlos Tanquero López',
+          ruc: '0706323194001',
+          email: 'juan.tanquero@mail.com',
+          total: 180,
+          pagado: 0,
+          estadoPago: 'pendiente',
+          estadoSri: 'autorizada',
+          hora: '10:04',
+          metodo: 'Crédito',
+          claveAcceso: '0905202601070632319400120010010002191234567816',
+          autorizacion: '0905202601070632319400120010010002191234567816',
+          ultimoEnvio: '',
+          items: ['Carga de tanquero', 'Guía de despacho'],
+        },
+        {
+          id: '001-001-000220',
+          cliente: 'Rosa Córdova Pineda',
+          ruc: '0702381199',
+          email: 'rosa.cordova@mail.com',
+          total: 9.8,
+          pagado: 9.8,
+          estadoPago: 'anulada',
+          estadoSri: 'anulada',
+          hora: '10:36',
+          metodo: 'Efectivo',
+          claveAcceso: '0905202601070238119900120010010002201234567817',
+          autorizacion: '0905202601070238119900120010010002201234567817',
+          motivoAnulacion: 'Duplicada por corrección de medidor',
+          items: ['Agua potable abril'],
+        },
+        {
+          id: '001-001-000221',
+          cliente: 'Hotel Frontera Azul',
+          ruc: '0790011223001',
+          email: 'administracion@fronteraazul.ec',
+          total: 312.4,
+          pagado: 312.4,
+          estadoPago: 'pagada',
+          estadoSri: 'autorizada',
+          hora: '11:05',
+          metodo: 'Transferencia',
+          claveAcceso: '0905202601079001122300120010010002211234567818',
+          autorizacion: '0905202601079001122300120010010002211234567818',
+          ultimoEnvio: '11:08',
+          items: ['Consumo hotelero', 'Mantenimiento de acometida'],
+        },
+      ];
+
+      let filtroEstadoSri = 'todos';
+      let facturaSeleccionada = facturas[1].id;
+      const usuarioActual = { nombre: 'Ana Torres', rol: 'Contadora' };
+      let eventos = [
+        { fecha: '2026-05-09', hora: '11:08', usuario: 'Luis Méndez', rol: 'Tesorería', tipo: 'Correo', descripcion: 'RIDE enviado a administración@fronteraazul.ec', factura: '001-001-000221' },
+        { fecha: '2026-05-09', hora: '10:36', usuario: 'Ana Torres', rol: 'Contabilidad', tipo: 'Anulación', descripcion: 'Factura anulada por duplicidad de medidor', factura: '001-001-000220' },
+        { fecha: '2026-05-09', hora: '09:23', usuario: 'Sistema SRI', rol: 'Integración', tipo: 'SRI', descripcion: 'Comprobante recibido por el SRI', factura: '001-001-000218' },
+        { fecha: '2026-05-09', hora: '08:31', usuario: 'Carlos Vera', rol: 'Soporte', tipo: 'Error', descripcion: 'Se detectó clave de acceso registrada', factura: '001-001-000216' },
+        { fecha: '2026-04-30', hora: '17:48', usuario: 'Johanna Díaz', rol: 'Caja 01', tipo: 'Cierre', descripcion: 'Cierre de caja conciliado sin diferencia', factura: '001-001-000215' },
+        { fecha: '2026-03-31', hora: '08:02', usuario: 'María Paredes', rol: 'Tesorería', tipo: 'Apertura', descripcion: 'Apertura de caja con fondo inicial registrado', factura: '001-001-000217' },
+        { fecha: '2026-02-28', hora: '16:55', usuario: 'Ana Torres', rol: 'Contabilidad', tipo: 'Descarga', descripcion: 'XML descargado para respaldo mensual', factura: '001-001-000221' },
+        { fecha: '2026-01-31', hora: '18:10', usuario: 'Luis Méndez', rol: 'Tesorería', tipo: 'Cierre', descripcion: 'Revisión anual acumulada de comprobantes autorizados', factura: '001-001-000219' },
+      ];
+
+      function dinero(valor) {
+        return new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD' }).format(valor);
+      }
+
+      function sumarFacturas(lista, campo) {
+        return lista.reduce((total, factura) => total + factura[campo], 0);
+      }
+
+      function plural(cantidad, singular, pluralTexto) {
+        return `${cantidad} ${cantidad === 1 ? singular : pluralTexto}`;
+      }
+
+      function fechaCorta(fecha) {
+        return new Date(`${fecha}T00:00:00`).toLocaleDateString('es-EC', { day: '2-digit', month: 'short' });
+      }
+
+      function facturaActual() {
+        if (!facturaSeleccionada) return null;
+        return facturas.find((factura) => factura.id === facturaSeleccionada) || null;
+      }
+
+      function obtenerFiltradas() {
+        const texto = document.getElementById('busqueda').value.trim().toLowerCase();
+        const pago = document.getElementById('filtroPago').value;
+
+        return facturas.filter((factura) => {
+          const coincideEstado = filtroEstadoSri === 'todos' || factura.estadoSri === filtroEstadoSri;
+          const coincidePago = pago === 'todos' || factura.estadoPago === pago;
+          const coincideTexto = !texto || `${factura.id} ${factura.cliente} ${factura.ruc} ${factura.email}`.toLowerCase().includes(texto);
+          return coincideEstado && coincidePago && coincideTexto;
+        });
+      }
+
+      function contarPorEstado(estado) {
+        return facturas.filter((factura) => factura.estadoSri === estado).length;
+      }
+
+      function renderMetricas() {
+        const metricas = [
+          { label: 'Pendientes', value: contarPorEstado('pendiente') + contarPorEstado('recibida'), color: 'text-amber-700', icon: 'clock-3' },
+          { label: 'Errores', value: contarPorEstado('error'), color: 'text-rose-700', icon: 'triangle-alert' },
+          { label: 'Autorizadas', value: contarPorEstado('autorizada'), color: 'text-emerald-700', icon: 'badge-check' },
+          { label: 'Anuladas', value: contarPorEstado('anulada'), color: 'text-slate-700', icon: 'ban' },
+        ];
+
+        document.getElementById('metricasCompactas').innerHTML = metricas
+          .map(
+            (metrica) => `
+              <div class="flex items-center gap-2 rounded-lg border border-line bg-slate-50 px-3 py-2">
+                <i data-lucide="${metrica.icon}" class="h-4 w-4 ${metrica.color}"></i>
+                <div class="min-w-0">
+                  <div class="text-[11px] font-bold uppercase tracking-wide text-slate-500">${metrica.label}</div>
+                  <div class="text-lg font-black leading-none ${metrica.color}">${metrica.value}</div>
+                </div>
+              </div>
+            `,
+          )
+          .join('');
+      }
+
+      function renderFiltrosEstado() {
+        const orden = ['todos', 'autorizada', 'pendiente', 'recibida', 'error', 'anulada'];
+        document.getElementById('filtrosEstado').innerHTML = orden
+          .map((estado) => {
+            const config = estadoSriConfig[estado];
+            const activo = filtroEstadoSri === estado;
+            const cantidad = estado === 'todos' ? facturas.length : contarPorEstado(estado);
+            return `
+              <button
+                onclick="cambiarFiltroEstado('${estado}')"
+                class="inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-xs font-bold transition ${activo ? config.className : 'border-line bg-white text-slate-600 hover:bg-slate-50'}"
+              >
+                <span class="h-1.5 w-1.5 rounded-full ${activo ? config.dot.replace('text-', 'bg-') : 'bg-slate-300'}"></span>
+                ${config.label}
+                <span class="rounded bg-white/70 px-1.5 py-0.5">${cantidad}</span>
+              </button>
+            `;
+          })
+          .join('');
+      }
+
+      function renderTabla() {
+        const filtradas = obtenerFiltradas();
+        const cuerpo = document.getElementById('tablaFacturas');
+
+        if (filtradas.length === 0) {
+          cuerpo.innerHTML = `
+            <tr>
+              <td colspan="6" class="px-4 py-12 text-center text-sm font-medium text-slate-500">
+                No hay comprobantes con los filtros actuales.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        cuerpo.innerHTML = filtradas
+          .map((factura) => {
+            const sri = estadoSriConfig[factura.estadoSri];
+            const pago = pagoConfig[factura.estadoPago];
+            const seleccionada = factura.id === facturaSeleccionada;
+            const saldo = Math.max(factura.total - factura.pagado, 0);
+            const puedeReenviar = factura.estadoSri !== 'autorizada' && factura.estadoSri !== 'anulada';
+            const puedeAnular = factura.estadoSri === 'autorizada';
+            const puedeRide = factura.estadoSri === 'autorizada' || factura.estadoSri === 'anulada';
+            const puedeCorreo = factura.estadoSri === 'autorizada';
+
+            return `
+              <tr onclick="seleccionarFactura('${factura.id}')" class="cursor-pointer transition ${seleccionada ? 'bg-cyan-50/60' : 'hover:bg-slate-50'}">
+                <td class="px-4 py-3 align-top">
+                  <div class="font-bold text-ink">${factura.id}</div>
+                  <div class="mt-1 text-xs text-slate-500">${factura.hora} · ${factura.metodo}</div>
+                </td>
+                <td class="px-4 py-3 align-top">
+                  <div class="max-w-[260px] truncate font-semibold text-slate-800">${factura.cliente}</div>
+                  <div class="mt-1 max-w-[260px] truncate text-xs text-slate-500">${factura.ruc} · ${factura.email}</div>
+                </td>
+                <td class="px-4 py-3 align-top">
+                  <span class="inline-flex rounded-md border px-2 py-1 text-xs font-bold ${pago.className}">${pago.label}</span>
+                  <div class="mt-1 text-xs text-slate-500">${saldo > 0 ? `Saldo ${dinero(saldo)}` : 'Sin saldo'}</div>
+                </td>
+                <td class="px-4 py-3 align-top">
+                  <span class="inline-flex items-center gap-2 rounded-md border px-2 py-1 text-xs font-bold ${sri.className}">
+                    <span class="h-1.5 w-1.5 rounded-full ${sri.dot.replace('text-', 'bg-')}"></span>
+                    ${sri.label}
+                  </span>
+                  <div class="mt-1 max-w-[210px] truncate text-xs text-slate-500">${factura.error || factura.autorizacion || 'Sin novedad'}</div>
+                </td>
+                <td class="px-4 py-3 text-right align-top font-black text-ink">${dinero(factura.total)}</td>
+                <td class="px-4 py-3 align-top">
+                  <div class="flex justify-end gap-1.5" onclick="event.stopPropagation()">
+                    ${botonAccion('Ver RIDE', 'file-text', puedeRide, `abrirRide('${factura.id}')`)}
+                    ${botonAccion('Descargar RIDE', 'file-down', puedeRide, `descargarRide('${factura.id}')`)}
+                    ${botonAccion('XML', 'code-2', true, `abrirXml('${factura.id}')`)}
+                    ${botonAccion('Descargar XML', 'download', true, `descargarXml('${factura.id}')`)}
+                    ${botonAccion('Enviar correo', 'send', puedeCorreo, `enviarCorreo('${factura.id}')`)}
+                    ${botonAccion('Reenviar SRI', 'upload-cloud', puedeReenviar, `reenviarSri('${factura.id}')`)}
+                    ${botonAccion('Anular', 'ban', puedeAnular, `anularFactura('${factura.id}')`)}
+                  </div>
+                </td>
+              </tr>
+            `;
+          })
+          .join('');
+      }
+
+      function botonAccion(titulo, icono, habilitado, accion) {
+        const base = 'inline-flex h-8 w-8 items-center justify-center rounded-lg border transition';
+        const estilo = habilitado ? 'border-line bg-white text-slate-700 hover:border-water hover:text-water hover:bg-cyan-50' : 'cursor-not-allowed border-slate-100 bg-slate-50 text-slate-300';
+        const disabled = habilitado ? `onclick="${accion}"` : 'disabled';
+        return `
+          <button ${disabled} class="${base} ${estilo}" title="${titulo}" aria-label="${titulo}">
+            <i data-lucide="${icono}" class="h-4 w-4"></i>
+          </button>
+        `;
+      }
+
+      function renderFlujo() {
+        const vigentes = facturas.filter((factura) => factura.estadoPago !== 'anulada' && factura.estadoSri !== 'anulada');
+        const anuladas = facturas.filter((factura) => factura.estadoPago === 'anulada' || factura.estadoSri === 'anulada');
+        const totalFacturado = sumarFacturas(vigentes, 'total');
+        const totalCobrado = sumarFacturas(vigentes, 'pagado');
+        const totalPendiente = vigentes.reduce((total, factura) => total + Math.max(factura.total - factura.pagado, 0), 0);
+        const totalAnulado = sumarFacturas(anuladas, 'total');
+        const pagadas = vigentes.filter((factura) => factura.estadoPago === 'pagada').length;
+        const parciales = vigentes.filter((factura) => factura.estadoPago === 'parcial').length;
+        const pendientesPago = vigentes.filter((factura) => factura.estadoPago === 'pendiente').length;
+        const pendientesSri = vigentes.filter((factura) => factura.estadoSri === 'pendiente' || factura.estadoSri === 'recibida').length;
+        const erroresSri = vigentes.filter((factura) => factura.estadoSri === 'error').length;
+        const rideSinEnvio = vigentes.filter((factura) => factura.estadoSri === 'autorizada' && !factura.ultimoEnvio).length;
+        const fondoInicial = 50;
+        const cajaEsperada = totalCobrado + fondoInicial;
+        const cajaReportada = cajaEsperada;
+        const diferenciaCaja = cajaReportada - cajaEsperada;
+
+        const pasos = [
+          { label: 'Facturado', value: totalFacturado, caption: plural(vigentes.length, 'factura', 'facturas'), icon: 'receipt-text', bar: 'bg-slate-700', color: 'text-slate-800', bg: 'bg-slate-50' },
+          { label: 'Cobrado', value: totalCobrado, caption: plural(pagadas, 'pagada', 'pagadas'), icon: 'wallet-cards', bar: 'bg-emerald-600', color: 'text-emerald-700', bg: 'bg-emerald-50' },
+          { label: 'Pendiente', value: totalPendiente, caption: `${pendientesPago} pendientes · ${parciales} parciales`, icon: 'clock-3', bar: 'bg-amber-500', color: 'text-amber-700', bg: 'bg-amber-50' },
+          { label: 'Anulado', value: totalAnulado, caption: plural(anuladas.length, 'anulada', 'anuladas'), icon: 'ban', bar: 'bg-slate-500', color: 'text-slate-700', bg: 'bg-slate-100' },
+        ];
+        const max = Math.max(...pasos.map((paso) => paso.value), 1);
+        const horas = ['08', '09', '10', '11', '12', '13'].map((hora) => {
+          const facturasHora = vigentes.filter((factura) => factura.hora.startsWith(hora));
+          return {
+            h: hora,
+            generado: sumarFacturas(facturasHora, 'total'),
+            cobrado: sumarFacturas(facturasHora, 'pagado'),
+          };
+        });
+        const maxHora = Math.max(...horas.map((hora) => hora.generado), 1);
+
+        document.getElementById('flujoDia').innerHTML = `
+          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            ${pasos
+              .map(
+                (paso) => `
+                <div class="rounded-lg border border-line ${paso.bg} p-3">
+                  <div class="flex items-start justify-between gap-3">
+                    <div>
+                      <div class="flex items-center gap-2 text-xs font-black uppercase tracking-wide text-slate-500">
+                        <i data-lucide="${paso.icon}" class="h-4 w-4 ${paso.color}"></i>
+                        ${paso.label}
+                      </div>
+                      <div class="mt-2 text-xl font-black ${paso.color}">${dinero(paso.value)}</div>
+                    </div>
+                    <span class="rounded bg-white/70 px-2 py-1 text-[11px] font-bold text-slate-500">${paso.caption}</span>
+                  </div>
+                  <div class="mt-3 h-2 overflow-hidden rounded-full bg-white">
+                    <div class="h-full rounded-full ${paso.bar}" style="width:${Math.max((paso.value / max) * 100, paso.value ? 12 : 0)}%"></div>
+                  </div>
+                </div>
+              `,
+              )
+              .join('')}
+          </div>
+
+          <div class="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_330px]">
+            <div class="rounded-lg border border-line bg-slate-50 p-3">
+              <div class="mb-3 flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wide text-slate-500">Ingresos por hora</span>
+                <span class="text-xs font-bold text-water">${dinero(totalCobrado)}</span>
+              </div>
+              <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
+                ${horas
+                  .map((hora) => {
+                    const generado = Math.max((hora.generado / maxHora) * 100, hora.generado ? 12 : 0);
+                    const cobrado = hora.generado ? Math.min((hora.cobrado / hora.generado) * 100, 100) : 0;
+                    return `
+                      <div class="rounded-lg border border-white bg-white p-2">
+                        <div class="mb-2 flex items-center justify-between">
+                          <span class="text-[11px] font-black text-slate-500">${hora.h}h</span>
+                          <span class="text-[11px] font-bold text-slate-600">${dinero(hora.cobrado)}</span>
+                        </div>
+                        <div class="h-3 overflow-hidden rounded-full bg-slate-200">
+                          <div class="h-full rounded-full bg-water/80" style="width:${generado}%">
+                            <div class="h-full rounded-full bg-emerald-500" style="width:${cobrado}%"></div>
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  })
+                  .join('')}
+              </div>
+              <div class="mt-3 flex flex-wrap items-center gap-3 text-[11px] font-bold text-slate-500">
+                <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-water/80"></span>Facturado</span>
+                <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-emerald-500"></span>Cobrado</span>
+              </div>
+            </div>
+
+            <div class="rounded-lg border border-line bg-white p-3">
+              <div class="mb-3 flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wide text-slate-500">Control de cierre</span>
+                <span class="rounded-full ${diferenciaCaja === 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'} px-2 py-1 text-[11px] font-black">${diferenciaCaja === 0 ? 'Conciliado' : 'Revisar'}</span>
+              </div>
+              <div class="space-y-2 text-sm">
+                <div class="flex items-center justify-between gap-3">
+                  <span class="font-medium text-slate-600">Fondo inicial</span>
+                  <strong class="text-ink">${dinero(fondoInicial)}</strong>
+                </div>
+                <div class="flex items-center justify-between gap-3">
+                  <span class="font-medium text-slate-600">Caja esperada</span>
+                  <strong class="text-ink">${dinero(cajaEsperada)}</strong>
+                </div>
+                <div class="flex items-center justify-between gap-3">
+                  <span class="font-medium text-slate-600">Diferencia</span>
+                  <strong class="${diferenciaCaja === 0 ? 'text-emerald-700' : 'text-rose-700'}">${dinero(diferenciaCaja)}</strong>
+                </div>
+                <div class="border-t border-slate-100 pt-2 text-xs font-bold text-slate-500">
+                  ${pendientesSri} SRI pendientes · ${erroresSri} errores · ${rideSinEnvio} RIDE sin enviar
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderDetalle() {
+        const factura = facturaActual();
+        if (!factura) {
+          document.getElementById('detalleNumero').textContent = 'Sin factura seleccionada';
+          document.getElementById('detalleFactura').innerHTML = `
+            <div class="p-4">
+              <div class="rounded-lg border border-dashed border-line bg-slate-50 p-6 text-center">
+                <div class="mx-auto flex h-11 w-11 items-center justify-center rounded-lg bg-white text-slate-500">
+                  <i data-lucide="panel-right-close" class="h-5 w-5"></i>
+                </div>
+                <h3 class="mt-3 text-sm font-black text-ink">Detalle cerrado</h3>
+                <p class="mt-1 text-sm leading-6 text-slate-500">Seleccione un comprobante de la tabla para revisar RIDE, XML, correo, reenvío o anulación.</p>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        const sri = estadoSriConfig[factura.estadoSri];
+        const pago = pagoConfig[factura.estadoPago];
+        const saldo = Math.max(factura.total - factura.pagado, 0);
+        const puedeReenviar = factura.estadoSri !== 'autorizada' && factura.estadoSri !== 'anulada';
+        const puedeAnular = factura.estadoSri === 'autorizada';
+        const puedeRide = factura.estadoSri === 'autorizada' || factura.estadoSri === 'anulada';
+        const puedeCorreo = factura.estadoSri === 'autorizada';
+
+        document.getElementById('detalleNumero').textContent = factura.id;
+        document.getElementById('detalleFactura').innerHTML = `
+          <div class="space-y-4 p-4">
+            <div class="rounded-lg border border-line bg-slate-50 p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <h3 class="truncate text-base font-black text-ink">${factura.cliente}</h3>
+                  <p class="mt-1 text-xs font-medium text-slate-500">${factura.ruc} · ${factura.email}</p>
+                </div>
+                <span class="shrink-0 rounded-md border px-2 py-1 text-xs font-bold ${sri.className}">${sri.short}</span>
+              </div>
+              <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Total</p>
+                  <p class="mt-1 text-xl font-black text-ink">${dinero(factura.total)}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Saldo</p>
+                  <p class="mt-1 text-xl font-black ${saldo > 0 ? 'text-orange-700' : 'text-emerald-700'}">${dinero(saldo)}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="abrirRide('${factura.id}')" ${puedeRide ? '' : 'disabled'} class="${botonDetalleClase(puedeRide)}">
+                <i data-lucide="file-text" class="h-4 w-4"></i>
+                Ver RIDE
+              </button>
+              <button onclick="descargarRide('${factura.id}')" ${puedeRide ? '' : 'disabled'} class="${botonDetalleClase(puedeRide)}">
+                <i data-lucide="file-down" class="h-4 w-4"></i>
+                Descargar RIDE
+              </button>
+              <button onclick="abrirXml('${factura.id}')" class="${botonDetalleClase(true)}">
+                <i data-lucide="code-2" class="h-4 w-4"></i>
+                XML
+              </button>
+              <button onclick="descargarXml('${factura.id}')" class="${botonDetalleClase(true)}">
+                <i data-lucide="download" class="h-4 w-4"></i>
+                Descargar XML
+              </button>
+              <button onclick="enviarCorreo('${factura.id}')" ${puedeCorreo ? '' : 'disabled'} class="${botonDetalleClase(puedeCorreo)}">
+                <i data-lucide="send" class="h-4 w-4"></i>
+                Reenviar cliente
+              </button>
+              <button onclick="reenviarSri('${factura.id}')" ${puedeReenviar ? '' : 'disabled'} class="${botonDetalleClase(puedeReenviar)}">
+                <i data-lucide="upload-cloud" class="h-4 w-4"></i>
+                Reenviar SRI
+              </button>
+              <button onclick="anularFactura('${factura.id}')" ${puedeAnular ? '' : 'disabled'} class="col-span-2 ${botonDetalleClase(puedeAnular, true)}">
+                <i data-lucide="ban" class="h-4 w-4"></i>
+                Anular comprobante autorizado
+              </button>
+            </div>
+
+            <div class="rounded-lg border border-line">
+              <div class="border-b border-line px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">Información tributaria</div>
+              <dl class="divide-y divide-slate-100 text-sm">
+                ${filaDetalle('Estado pago', `<span class="rounded-md border px-2 py-1 text-xs font-bold ${pago.className}">${pago.label}</span>`)}
+                ${filaDetalle('Hora emisión', factura.hora)}
+                ${filaDetalle('Método', factura.metodo)}
+                ${filaDetalle('Clave acceso', `<span class="break-all font-mono text-xs">${factura.claveAcceso}</span>`)}
+                ${filaDetalle('Autorización', factura.autorizacion ? `<span class="break-all font-mono text-xs">${factura.autorizacion}</span>` : 'Pendiente')}
+                ${factura.ultimoEnvio ? filaDetalle('Último correo', factura.ultimoEnvio) : ''}
+                ${factura.motivoAnulacion ? filaDetalle('Motivo anulación', factura.motivoAnulacion) : ''}
+              </dl>
+            </div>
+
+            <div class="rounded-lg border border-line">
+              <div class="border-b border-line px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">Detalle de cobro</div>
+              <div class="divide-y divide-slate-100">
+                ${factura.items.map((item) => `<div class="px-4 py-3 text-sm font-medium text-slate-700">${item}</div>`).join('')}
+              </div>
+            </div>
+
+            ${
+              factura.error
+                ? `
+                  <div class="rounded-lg border border-rose-200 bg-rose-50 p-4">
+                    <div class="mb-2 flex items-center gap-2 text-sm font-black text-rose-800">
+                      <i data-lucide="triangle-alert" class="h-4 w-4"></i>
+                      Observación SRI
+                    </div>
+                    <p class="text-sm leading-6 text-rose-800">${factura.error}</p>
+                  </div>
+                `
+                : ''
+            }
+          </div>
+        `;
+      }
+
+      function botonDetalleClase(habilitado, peligro = false) {
+        if (!habilitado) {
+          return 'inline-flex h-10 cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-slate-100 bg-slate-50 px-3 text-sm font-bold text-slate-300';
+        }
+        if (peligro) {
+          return 'inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 text-sm font-bold text-rose-700 transition hover:bg-rose-100';
+        }
+        return 'inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-line bg-white px-3 text-sm font-bold text-slate-700 transition hover:border-water hover:bg-cyan-50 hover:text-water';
+      }
+
+      function filaDetalle(label, valor) {
+        return `
+          <div class="grid grid-cols-[120px_minmax(0,1fr)] gap-3 px-4 py-3">
+            <dt class="text-xs font-bold uppercase tracking-wide text-slate-500">${label}</dt>
+            <dd class="min-w-0 text-right font-semibold text-slate-700">${valor}</dd>
+          </div>
+        `;
+      }
+
+      function renderBitacora() {
+        const eventosAnuales = eventos.filter((evento) => evento.fecha.startsWith('2026'));
+        document.getElementById('totalEventos').textContent = `${plural(eventosAnuales.length, 'registro', 'registros')} · 2026`;
+        document.getElementById('bitacora').innerHTML = `
+          <div class="hidden grid-cols-[104px_180px_130px_minmax(0,1fr)_150px] gap-3 border-b border-slate-100 px-3 py-2 text-[11px] font-black uppercase tracking-wide text-slate-400 lg:grid">
+            <span>Fecha</span>
+            <span>Usuario</span>
+            <span>Acción</span>
+            <span>Detalle</span>
+            <span class="text-right">Comprobante</span>
+          </div>
+          <div class="divide-y divide-slate-100">
+            ${eventosAnuales
+              .map((evento) => {
+                const existeFactura = facturas.some((factura) => factura.id === evento.factura);
+                return `
+                  <button ${existeFactura ? `onclick="seleccionarFactura('${evento.factura}')"` : ''} class="grid w-full gap-2 rounded-lg px-3 py-3 text-left transition hover:bg-slate-50 lg:grid-cols-[104px_180px_130px_minmax(0,1fr)_150px] lg:items-center lg:gap-3">
+                    <span class="text-xs font-black text-water">${fechaCorta(evento.fecha)} · ${evento.hora}</span>
+                    <span class="min-w-0">
+                      <span class="block truncate text-sm font-bold text-ink">${evento.usuario}</span>
+                      <span class="block truncate text-xs font-medium text-slate-500">${evento.rol}</span>
+                    </span>
+                    <span class="inline-flex w-fit rounded-md border border-line bg-slate-50 px-2 py-1 text-xs font-bold text-slate-600">${evento.tipo}</span>
+                    <span class="min-w-0 text-sm font-medium text-slate-700">${evento.descripcion}</span>
+                    <span class="text-sm font-black text-slate-700 lg:text-right">${evento.factura}</span>
+                  </button>
+                `;
+              })
+              .join('')}
+          </div>
+        `;
+      }
+
+      function renderTodo() {
+        renderMetricas();
+        renderFiltrosEstado();
+        renderTabla();
+        renderFlujo();
+        renderDetalle();
+        renderBitacora();
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+      }
+
+      function cambiarFiltroEstado(estado) {
+        filtroEstadoSri = estado;
+        renderTodo();
+      }
+
+      function aplicarFiltros() {
+        renderTabla();
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+      }
+
+      function limpiarFiltros() {
+        document.getElementById('busqueda').value = '';
+        document.getElementById('filtroPago').value = 'todos';
+        filtroEstadoSri = 'todos';
+        renderTodo();
+      }
+
+      function seleccionarFactura(id) {
+        facturaSeleccionada = id;
+        mostrarPanelDetalle();
+        renderTabla();
+        renderDetalle();
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+      }
+
+      function cerrarDetalle() {
+        facturaSeleccionada = null;
+        document.getElementById('panelDetalle').classList.add('hidden');
+        document.getElementById('layoutPrincipal').classList.remove('lg:grid-cols-[minmax(0,1fr)_390px]');
+        document.getElementById('layoutPrincipal').classList.add('lg:grid-cols-1');
+        renderTabla();
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+      }
+
+      function mostrarPanelDetalle() {
+        document.getElementById('panelDetalle').classList.remove('hidden');
+        document.getElementById('layoutPrincipal').classList.remove('lg:grid-cols-1');
+        document.getElementById('layoutPrincipal').classList.add('lg:grid-cols-[minmax(0,1fr)_390px]');
+      }
+
+      function registrarEvento(tipo, descripcion, facturaId) {
+        const ahora = new Date();
+        const fecha = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`;
+        const hora = `${String(ahora.getHours()).padStart(2, '0')}:${String(ahora.getMinutes()).padStart(2, '0')}`;
+        eventos.unshift({ fecha, hora, usuario: usuarioActual.nombre, rol: usuarioActual.rol, tipo, descripcion, factura: facturaId });
+      }
+
+      function reenviarSri(id) {
+        const factura = facturas.find((item) => item.id === id);
+        if (!factura || factura.estadoSri === 'autorizada' || factura.estadoSri === 'anulada') return;
+
+        factura.estadoSri = 'autorizada';
+        factura.autorizacion = factura.claveAcceso;
+        factura.error = '';
+        registrarEvento('SRI', `Factura ${id} reenviada y autorizada`, id);
+        facturaSeleccionada = id;
+        renderTodo();
+        abrirModal('SRI', 'Reenvío completado', `<p class="text-sm text-slate-700">El comprobante <strong>${id}</strong> fue reenviado al SRI y quedó autorizado.</p>`);
+      }
+
+      function anularFactura(id) {
+        const factura = facturas.find((item) => item.id === id);
+        if (!factura || factura.estadoSri !== 'autorizada') return;
+
+        factura.estadoSri = 'anulada';
+        factura.estadoPago = 'anulada';
+        factura.motivoAnulacion = 'Anulación solicitada por contabilidad';
+        registrarEvento('Anulación', `Factura ${id} anulada desde contabilidad`, id);
+        facturaSeleccionada = id;
+        renderTodo();
+        abrirModal('Anulación', 'Comprobante anulado', `<p class="text-sm text-slate-700">El comprobante <strong>${id}</strong> fue marcado como anulado. La acción solo estaba disponible porque se encontraba autorizado.</p>`);
+      }
+
+      function enviarCorreo(id) {
+        const factura = facturas.find((item) => item.id === id);
+        if (!factura || factura.estadoSri !== 'autorizada') return;
+
+        factura.ultimoEnvio = new Date().toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' });
+        registrarEvento('Correo', `RIDE reenviado a ${factura.email}`, id);
+        facturaSeleccionada = id;
+        renderTodo();
+        abrirModal(
+          'Correo',
+          'RIDE reenviado al cliente',
+          `<div class="space-y-3 text-sm text-slate-700">
+            <p>Se simuló el reenvío del RIDE y XML al correo:</p>
+            <p class="rounded-lg border border-line bg-slate-50 p-3 font-bold text-ink">${factura.email}</p>
+          </div>`,
+        );
+      }
+
+      function contenidoRide(factura) {
+        return `<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>RIDE ${factura.id}</title>
+    <style>
+      body { font-family: Arial, sans-serif; color: #172033; padding: 32px; }
+      .box { border: 1px solid #d9e1ea; border-radius: 8px; padding: 20px; max-width: 760px; margin: auto; }
+      h1 { margin: 0 0 4px; font-size: 22px; }
+      .muted { color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 24px 0; }
+      .label { color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 700; }
+      .value { margin-top: 4px; font-weight: 700; }
+      .code { background: #0f172a; color: #cffafe; padding: 16px; border-radius: 8px; font-family: Consolas, monospace; font-size: 12px; line-height: 1.6; word-break: break-all; }
+    </style>
+  </head>
+  <body>
+    <section class="box">
+      <div class="muted">Aguas Huaquillas · Representación impresa</div>
+      <h1>Factura electrónica ${factura.id}</h1>
+      <div class="grid">
+        <div><div class="label">Cliente</div><div class="value">${factura.cliente}</div></div>
+        <div><div class="label">RUC/C.I.</div><div class="value">${factura.ruc}</div></div>
+        <div><div class="label">Correo</div><div class="value">${factura.email}</div></div>
+        <div><div class="label">Total</div><div class="value">${dinero(factura.total)}</div></div>
+        <div><div class="label">Estado SRI</div><div class="value">${estadoSriConfig[factura.estadoSri].label}</div></div>
+        <div><div class="label">Estado pago</div><div class="value">${pagoConfig[factura.estadoPago].label}</div></div>
+      </div>
+      <div class="code">
+        AUTORIZACION: ${factura.autorizacion || 'PENDIENTE'}<br />
+        CLAVE ACCESO: ${factura.claveAcceso}
+      </div>
+    </section>
+  </body>
+</html>`;
+      }
+
+      function contenidoXml(factura) {
+        return `<factura id="${factura.id}">
+  <infoTributaria>
+    <razonSocial>AGUAS HUAQUILLAS</razonSocial>
+    <claveAcceso>${factura.claveAcceso}</claveAcceso>
+    <estado>${factura.estadoSri}</estado>
+  </infoTributaria>
+  <infoFactura>
+    <cliente ruc="${factura.ruc}" email="${factura.email}">${factura.cliente}</cliente>
+    <total>${factura.total.toFixed(2)}</total>
+    <pagado>${factura.pagado.toFixed(2)}</pagado>
+  </infoFactura>
+</factura>`;
+      }
+
+      function descargarArchivo(nombre, contenido, tipo) {
+        const blob = new Blob([contenido], { type: `${tipo};charset=utf-8` });
+        const url = URL.createObjectURL(blob);
+        const enlace = document.createElement('a');
+        enlace.href = url;
+        enlace.download = nombre;
+        document.body.appendChild(enlace);
+        enlace.click();
+        enlace.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      function descargarRide(id) {
+        const factura = facturas.find((item) => item.id === id);
+        if (!factura || (factura.estadoSri !== 'autorizada' && factura.estadoSri !== 'anulada')) return;
+
+        descargarArchivo(`RIDE-${factura.id.replaceAll('-', '')}.html`, contenidoRide(factura), 'text/html');
+        registrarEvento('Descarga', `RIDE descargado por ${usuarioActual.nombre}`, id);
+        renderBitacora();
+        if (window.lucide) lucide.createIcons();
+      }
+
+      function descargarXml(id) {
+        const factura = facturas.find((item) => item.id === id);
+        if (!factura) return;
+
+        descargarArchivo(`${factura.id.replaceAll('-', '')}.xml`, contenidoXml(factura), 'application/xml');
+        registrarEvento('Descarga', `XML descargado por ${usuarioActual.nombre}`, id);
+        renderBitacora();
+        if (window.lucide) lucide.createIcons();
+      }
+
+      function abrirRide(id) {
+        const factura = facturas.find((item) => item.id === id);
+        if (!factura || (factura.estadoSri !== 'autorizada' && factura.estadoSri !== 'anulada')) return;
+
+        abrirModal(
+          'RIDE',
+          `RIDE ${factura.id}`,
+          `<div class="rounded-lg border border-line">
+            <div class="flex items-start justify-between gap-3 border-b border-line bg-slate-50 p-4">
+              <div>
+                <div class="text-xs font-bold uppercase tracking-wide text-slate-500">Representación impresa</div>
+                <div class="mt-1 text-xl font-black text-ink">Factura electrónica</div>
+              </div>
+              <button onclick="descargarRide('${factura.id}')" class="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-line bg-white px-3 text-sm font-bold text-slate-700 transition hover:border-water hover:bg-cyan-50 hover:text-water">
+                <i data-lucide="file-down" class="h-4 w-4"></i>
+                Descargar
+              </button>
+            </div>
+            <div class="space-y-4 p-4 text-sm">
+              <div class="grid gap-3 sm:grid-cols-2">
+                <div><span class="block text-xs font-bold uppercase text-slate-500">Cliente</span><strong>${factura.cliente}</strong></div>
+                <div><span class="block text-xs font-bold uppercase text-slate-500">RUC/C.I.</span><strong>${factura.ruc}</strong></div>
+                <div><span class="block text-xs font-bold uppercase text-slate-500">Factura</span><strong>${factura.id}</strong></div>
+                <div><span class="block text-xs font-bold uppercase text-slate-500">Total</span><strong>${dinero(factura.total)}</strong></div>
+              </div>
+              <div class="rounded-lg bg-slate-900 p-4 font-mono text-xs leading-6 text-cyan-100">
+                AUTORIZACION: ${factura.autorizacion}<br />
+                CLAVE ACCESO: ${factura.claveAcceso}<br />
+                ESTADO: ${estadoSriConfig[factura.estadoSri].label.toUpperCase()}
+              </div>
+            </div>
+          </div>`,
+        );
+      }
+
+      function abrirXml(id) {
+        const factura = facturas.find((item) => item.id === id);
+        if (!factura) return;
+
+        abrirModal(
+          'XML',
+          `XML ${factura.id}`,
+          `<div class="space-y-3">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p class="text-sm text-slate-600">Archivo sugerido: <strong>${factura.id.replaceAll('-', '')}.xml</strong></p>
+              <button onclick="descargarXml('${factura.id}')" class="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-line bg-white px-3 text-sm font-bold text-slate-700 transition hover:border-water hover:bg-cyan-50 hover:text-water">
+                <i data-lucide="download" class="h-4 w-4"></i>
+                Descargar
+              </button>
+            </div>
+            <pre class="max-h-96 overflow-auto rounded-lg bg-slate-950 p-4 text-xs leading-6 text-emerald-100">${contenidoXml(factura).replaceAll('<', '&lt;').replaceAll('>', '&gt;')}</pre>
+          </div>`,
+        );
+      }
+
+      function abrirModal(etiqueta, titulo, contenido) {
+        document.getElementById('modalEtiqueta').textContent = etiqueta;
+        document.getElementById('modalTitulo').textContent = titulo;
+        document.getElementById('modalContenido').innerHTML = contenido;
+        document.getElementById('modalAccion').classList.remove('hidden');
+        document.getElementById('modalAccion').classList.add('flex');
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+      }
+
+      function cerrarModal() {
+        document.getElementById('modalAccion').classList.add('hidden');
+        document.getElementById('modalAccion').classList.remove('flex');
+      }
+
+      function simularRecepcionSri() {
+        const pendiente = facturas.find((factura) => factura.estadoSri === 'pendiente' || factura.estadoSri === 'recibida');
+        if (!pendiente) {
+          abrirModal('Flujo', 'Sin comprobantes en cola', '<p class="text-sm text-slate-700">No hay facturas pendientes de consulta SRI en este momento.</p>');
+          return;
+        }
+
+        pendiente.estadoSri = 'autorizada';
+        pendiente.autorizacion = pendiente.claveAcceso;
+        pendiente.error = '';
+        facturaSeleccionada = pendiente.id;
+        registrarEvento('SRI', `Autorización recibida para ${pendiente.id}`, pendiente.id);
+        renderTodo();
+      }
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') cerrarModal();
+      });
+
+      function actualizarReloj() {
+        const ahora = new Date();
+        const horas = String(ahora.getHours()).padStart(2, '0');
+        const minutos = String(ahora.getMinutes()).padStart(2, '0');
+        document.getElementById('horaActual').textContent = `${horas}:${minutos}`;
+        document.getElementById('nombreContable').textContent = usuarioActual.rol;
+      }
+
+      setInterval(actualizarReloj, 1000);
+      actualizarReloj();
+      renderTodo();
+    </script>
+  </body>
+</html>

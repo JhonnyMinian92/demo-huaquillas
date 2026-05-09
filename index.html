@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Central - Aguas Huaquillas EP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-50 min-h-screen font-sans flex flex-col">
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">💧</span>
+          <span class="font-black text-xl text-slate-800 tracking-tight">AGUAS HUAQUILLAS <span class="text-sky-600">EP</span></span>
+        </div>
+        <div class="flex items-center gap-6">
+          <div class="text-right hidden md:block">
+            <p class="text-sm font-bold text-slate-700">Admin General</p>
+            <p class="text-xs text-slate-500">Sesión: Producción</p>
+          </div>
+          <div class="w-10 h-10 bg-sky-100 rounded-full flex items-center justify-center text-sky-700 font-bold border border-sky-200">AD</div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8 w-full">
+      <section class="mb-10">
+        <h2 class="text-3xl font-bold text-slate-800 mb-2">Bienvenido al Sistema Integral</h2>
+        <p class="text-slate-500">Gestión Comercial, Operativa y Técnica de Huaquillas.</p>
+      </section>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+          <p class="text-sm font-medium text-slate-500 mb-1">Recaudación Mensual</p>
+          <p class="text-3xl font-black text-slate-800">$124,500.00</p>
+          <div class="mt-2 text-xs text-emerald-600 font-bold">▲ 12% vs mes anterior</div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+          <p class="text-sm font-medium text-slate-500 mb-1">Eficiencia Medidores</p>
+          <p class="text-3xl font-black text-slate-800">88.4%</p>
+          <div class="mt-2 text-xs text-sky-600 font-bold">9,240 abonados activos</div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+          <p class="text-sm font-medium text-slate-500 mb-1">Tickets Pendientes</p>
+          <p class="text-3xl font-black text-rose-600">24</p>
+          <div class="mt-2 text-xs text-rose-500 font-bold">4 urgentes (Mantenimiento)</div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+          <p class="text-sm font-medium text-slate-500 mb-1">Salud del Sistema</p>
+          <p class="text-3xl font-black text-emerald-500">Óptima</p>
+          <div class="mt-2 text-xs text-slate-400 font-medium">SRI Conectado (Asíncrono)</div>
+        </div>
+      </div>
+
+      <h3 class="text-xl font-bold text-slate-800 mb-6">Módulos de Gestión</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col group hover:border-sky-500 transition-colors">
+          <div class="p-8 flex-1">
+            <div class="w-14 h-14 bg-sky-100 text-sky-600 rounded-xl flex items-center justify-center text-3xl mb-6 group-hover:bg-sky-600 group-hover:text-white transition-all">💵</div>
+            <h4 class="text-xl font-bold text-slate-800 mb-3">Recaudación y Caja</h4>
+            <p class="text-slate-500 text-sm leading-relaxed">Cobro express de planillas, gestión de pagos en efectivo y generación de facturación electrónica automática.</p>
+          </div>
+          <div class="p-6 bg-slate-50 border-t border-slate-100">
+            <a href="recaudacion.html" class="block w-full text-center bg-white border border-sky-600 text-sky-600 hover:bg-sky-600 hover:text-white font-bold py-3 rounded-xl transition-all">Abrir Módulo</a>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col group hover:border-emerald-500 transition-colors">
+          <div class="p-8 flex-1">
+            <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-3xl mb-6 group-hover:bg-emerald-600 group-hover:text-white transition-all">📋</div>
+            <h4 class="text-xl font-bold text-slate-800 mb-3">Catastro e Inspecciones</h4>
+            <p class="text-slate-500 text-sm leading-relaxed">Gestión de predios, geolocalización de servicios y edición inline del padrón de usuarios en campo.</p>
+          </div>
+          <div class="p-6 bg-slate-50 border-t border-slate-100">
+            <a href="catastro.html" class="block w-full text-center bg-white border border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white font-bold py-3 rounded-xl transition-all">Abrir Módulo</a>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col group hover:border-amber-500 transition-colors">
+          <div class="p-8 flex-1">
+            <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center text-3xl mb-6 group-hover:bg-amber-600 group-hover:text-white transition-all">📊</div>
+            <h4 class="text-xl font-bold text-slate-800 mb-3">Monitor SRI / Tesorería</h4>
+            <p class="text-slate-500 text-sm leading-relaxed">Control de facturación asíncrona, reporte de arqueos de caja y salud financiera de la institución.</p>
+          </div>
+          <div class="p-6 bg-slate-50 border-t border-slate-100">
+            <a href="sri.html" class="block w-full text-center bg-white border border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white font-bold py-3 rounded-xl transition-all">Abrir Módulo</a>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col group hover:border-rose-500 transition-colors">
+          <div class="p-8 flex-1">
+            <div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center text-3xl mb-6 group-hover:bg-rose-600 group-hover:text-white transition-all">🎧</div>
+            <h4 class="text-xl font-bold text-slate-800 mb-3">Bandeja de Requerimientos</h4>
+            <p class="text-slate-500 text-sm leading-relaxed">Recepción de quejas, sugerencias y derivación de tickets entre departamentos (Mantenimiento/Jurídico).</p>
+          </div>
+          <div class="p-6 bg-slate-50 border-t border-slate-100">
+            <a href="quejas.html" class="block w-full text-center bg-white border border-rose-600 text-rose-600 hover:bg-rose-600 hover:text-white font-bold py-3 rounded-xl transition-all">Abrir Módulo</a>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col group hover:border-slate-800 transition-colors">
+          <div class="p-8 flex-1">
+            <div class="w-14 h-14 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center text-3xl mb-6 group-hover:bg-slate-800 group-hover:text-white transition-all">🏢</div>
+            <h4 class="text-xl font-bold text-slate-800 mb-3">Kiosko de Turnos</h4>
+            <p class="text-slate-500 text-sm leading-relaxed">Interfaz ciudadana táctil para la organización de la atención física en las oficinas principales.</p>
+          </div>
+          <div class="p-6 bg-slate-50 border-t border-slate-100">
+            <a href="turnero.html" class="block w-full text-center bg-white border border-slate-800 text-slate-800 hover:bg-slate-800 hover:text-white font-bold py-3 rounded-xl transition-all">Ver Kiosko (Demo)</a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="mt-auto py-8 bg-white border-t border-slate-200">
+      <div class="max-w-7xl mx-auto px-4 text-center">
+        <p class="text-slate-400 text-sm">© 2026 Aguas Huaquillas EP - Sistema Integral de Gestión Comercial</p>
+      </div>
+    </footer>
+  </body>
+</html>

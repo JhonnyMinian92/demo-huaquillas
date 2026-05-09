@@ -58,23 +58,73 @@
       </section>
 
       <section class="w-[35%] bg-gray-100 border-l border-gray-300 p-6 flex flex-col gap-3 overflow-visible">
-        <!-- Total Pendiente -->
-        <div class="bg-white p-4 rounded-lg shadow border border-gray-200">
-          <div class="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Total Pendiente</div>
-          <div class="text-3xl font-black text-blue-900" id="totalPendiente">$0.00</div>
-          <div class="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200">
-            <span id="detalleFacturas">—</span>
+        <!-- Modo de Caja -->
+        <div class="bg-white p-2 rounded-lg shadow border border-gray-200">
+          <div class="grid grid-cols-2 gap-2">
+            <button id="btnModoPlanillas" onclick="cambiarModoCaja('planillas')" class="h-10 rounded-lg text-xs font-bold uppercase tracking-wide transition-colors">Planillas</button>
+            <button id="btnModoServicios" onclick="cambiarModoCaja('servicios')" class="h-10 rounded-lg text-xs font-bold uppercase tracking-wide transition-colors">Productos / Servicios</button>
           </div>
         </div>
 
-        <!-- Campo de Efectivo -->
-        <div class="bg-white p-4 rounded-lg shadow border border-gray-200">
-          <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">💵 Efectivo Recibido</label>
-          <div class="flex gap-2 items-end">
-            <div class="flex-1">
-              <input type="number" id="efectivoRecibido" placeholder="0.00" min="0" step="0.01" class="w-full text-2xl font-bold p-3 border-2 border-gray-300 rounded-lg text-right focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none" onkeypress="if (event.key === 'Enter') procesarCobro();" />
+        <div id="panelPlanillas" class="flex flex-col gap-3">
+          <!-- Total Pendiente -->
+          <div class="bg-white p-4 rounded-lg shadow border border-gray-200">
+            <div class="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Total Pendiente</div>
+            <div class="text-3xl font-black text-blue-900" id="totalPendiente">$0.00</div>
+            <div class="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200">
+              <span id="detalleFacturas">—</span>
             </div>
-            <span class="text-gray-700 font-bold">USD</span>
+          </div>
+
+          <!-- Campo de Efectivo -->
+          <div class="bg-white p-4 rounded-lg shadow border border-gray-200">
+            <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">💵 Efectivo Recibido</label>
+            <div class="flex gap-2 items-end">
+              <div class="flex-1">
+                <input type="number" id="efectivoRecibido" placeholder="0.00" min="0" step="0.01" class="w-full text-2xl font-bold p-3 border-2 border-gray-300 rounded-lg text-right focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none" onkeypress="if (event.key === 'Enter') procesarCobro();" />
+              </div>
+              <span class="text-gray-700 font-bold">USD</span>
+            </div>
+          </div>
+
+          <!-- Botón Cobrar -->
+          <button onclick="procesarCobro()" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 rounded-lg shadow transition-colors uppercase text-sm tracking-wide">💰 Procesar Cobro</button>
+        </div>
+
+        <div id="panelServicios" class="hidden flex-col gap-3">
+          <!-- Venta de Especies -->
+          <div class="bg-white p-4 rounded-lg shadow border border-gray-200">
+            <div class="flex justify-between items-start gap-3 mb-3">
+              <div>
+                <div class="text-xs font-semibold text-gray-700 uppercase tracking-wide">🏷️ Productos y Servicios</div>
+                <div class="text-xs text-gray-500 mt-1" id="clienteFacturaEspecie">Factura a: cliente actual</div>
+              </div>
+              <span id="stockEspecie" class="text-[11px] px-2 py-1 rounded-full bg-blue-50 text-blue-800 font-bold">Stock</span>
+            </div>
+
+            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">Producto / servicio</label>
+            <select id="selectEspecie" onchange="actualizarResumenEspecies()" class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900"></select>
+
+            <div class="grid grid-cols-[90px_minmax(0,1fr)] gap-2 mt-3">
+              <div>
+                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">Cant.</label>
+                <input type="number" id="cantidadEspecie" value="1" min="1" step="1" oninput="actualizarResumenEspecies()" class="w-full h-11 rounded-lg border border-gray-300 px-3 text-lg font-bold text-center focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">Efectivo</label>
+                <input type="number" id="efectivoEspecie" placeholder="0.00" min="0" step="0.01" onkeypress="if (event.key === 'Enter') venderEspecie();" class="w-full h-11 rounded-lg border border-gray-300 px-3 text-lg font-bold text-right focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-900" />
+              </div>
+            </div>
+
+            <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-200">
+              <div>
+                <div class="text-xs font-bold text-gray-500 uppercase tracking-wide">Total a facturar</div>
+                <div id="detalleEspecie" class="text-xs text-gray-500 mt-1">—</div>
+              </div>
+              <div id="totalEspecie" class="text-2xl font-black text-blue-900">$0.00</div>
+            </div>
+
+            <button onclick="venderEspecie()" class="w-full mt-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-lg shadow transition-colors uppercase text-sm tracking-wide">Facturar Producto</button>
           </div>
         </div>
 
@@ -86,9 +136,6 @@
           </div>
           <div id="textResultado" class="text-xs text-emerald-900 space-y-1.5"></div>
         </div>
-
-        <!-- Botón Cobrar -->
-        <button onclick="procesarCobro()" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 rounded-lg shadow transition-colors uppercase text-sm tracking-wide">💰 Procesar Cobro</button>
 
         <!-- Historial de Transacciones -->
         <div class="bg-white p-4 rounded-lg shadow border border-gray-200 flex-1 flex flex-col">
@@ -154,12 +201,21 @@
       };
 
       let clienteActual = null;
+      let modoCaja = 'planillas';
 
       const DESCUENTO_TERCERA_EDAD = 0.5;
       const PRECIO_POR_M3 = 0.65;
       const TARIFA_FIJA = 8.5;
       const PRECIO_TANQUERO_M3 = 0.35;
 
+      const catalogoEspecies = [
+        { codigo: 'ESP-001', tipo: 'Especie', nombre: 'Solicitud de Servicio', valor: 1.0, stock: 120 },
+        { codigo: 'ESP-002', tipo: 'Especie', nombre: 'Certificado de No Adeudar', valor: 2.0, stock: 80 },
+        { codigo: 'ESP-003', tipo: 'Especie', nombre: 'Copia Certificada', valor: 3.0, stock: 45 },
+        { codigo: 'ESP-004', tipo: 'Servicio', nombre: 'Formulario de Convenio de Pago', valor: 5.0, stock: 30 },
+      ];
+
+      let secuenciaFacturaEspecie = 1;
       let historialTransacciones = [];
 
       // Actualizar reloj
@@ -280,6 +336,7 @@
 
         renderizarFacturas();
         actualizarPanelCobro();
+        actualizarResumenEspecies();
       }
 
       // Limpiar cliente
@@ -291,6 +348,7 @@
         document.getElementById('listaFacturas').innerHTML = '';
         document.getElementById('totalPendiente').textContent = '$0.00';
         document.getElementById('detalleFacturas').textContent = '—';
+        actualizarResumenEspecies();
       }
 
       // Calcular monto base de factura
@@ -752,6 +810,94 @@
         document.getElementById('detalleFacturas').textContent = facturasAtrasadas > 0 ? `${facturasAtrasadas} factura${facturasAtrasadas > 1 ? 's' : ''} pendiente${facturasAtrasadas > 1 ? 's' : ''}` : '✓ Sin deuda';
       }
 
+      function cambiarModoCaja(modo) {
+        modoCaja = modo;
+        const esPlanillas = modoCaja === 'planillas';
+        const panelPlanillas = document.getElementById('panelPlanillas');
+        const panelServicios = document.getElementById('panelServicios');
+        const btnPlanillas = document.getElementById('btnModoPlanillas');
+        const btnServicios = document.getElementById('btnModoServicios');
+
+        panelPlanillas.classList.toggle('hidden', !esPlanillas);
+        panelPlanillas.classList.toggle('flex', esPlanillas);
+        panelServicios.classList.toggle('hidden', esPlanillas);
+        panelServicios.classList.toggle('flex', !esPlanillas);
+
+        btnPlanillas.className = esPlanillas ? 'h-10 rounded-lg bg-blue-900 text-xs font-bold uppercase tracking-wide text-white shadow transition-colors' : 'h-10 rounded-lg bg-gray-100 text-xs font-bold uppercase tracking-wide text-gray-600 transition-colors hover:bg-blue-50 hover:text-blue-900';
+        btnServicios.className = !esPlanillas ? 'h-10 rounded-lg bg-blue-900 text-xs font-bold uppercase tracking-wide text-white shadow transition-colors' : 'h-10 rounded-lg bg-gray-100 text-xs font-bold uppercase tracking-wide text-gray-600 transition-colors hover:bg-blue-50 hover:text-blue-900';
+
+        document.getElementById('resultadoPago').classList.add('hidden');
+        if (!esPlanillas) actualizarResumenEspecies();
+      }
+
+      function renderizarOpcionesEspecies(codigoSeleccionado = null) {
+        const select = document.getElementById('selectEspecie');
+        const codigoActivo = codigoSeleccionado || select.value || catalogoEspecies[0].codigo;
+
+        select.innerHTML = catalogoEspecies
+          .map((especie) => `<option value="${especie.codigo}" ${especie.codigo === codigoActivo ? 'selected' : ''}>${especie.tipo}: ${especie.nombre} - $${especie.valor.toFixed(2)}</option>`)
+          .join('');
+      }
+
+      function obtenerEspecieSeleccionada() {
+        const codigo = document.getElementById('selectEspecie').value || catalogoEspecies[0].codigo;
+        return catalogoEspecies.find((especie) => especie.codigo === codigo) || catalogoEspecies[0];
+      }
+
+      function actualizarResumenEspecies() {
+        if (!document.getElementById('selectEspecie')) return;
+
+        const especie = obtenerEspecieSeleccionada();
+        const cantidadInput = document.getElementById('cantidadEspecie');
+        const cantidad = Math.max(1, parseInt(cantidadInput.value || 1, 10));
+        const total = especie.valor * cantidad;
+
+        cantidadInput.value = cantidad;
+        document.getElementById('totalEspecie').textContent = `$${total.toFixed(2)}`;
+        document.getElementById('detalleEspecie').textContent = `${cantidad} × $${especie.valor.toFixed(2)} · ${especie.tipo}`;
+        document.getElementById('stockEspecie').textContent = `Stock: ${especie.stock}`;
+        document.getElementById('clienteFacturaEspecie').textContent = clienteActual ? `Factura a: ${clienteActual.nombre}` : 'Factura a: Consumidor Final';
+      }
+
+      function venderEspecie() {
+        const especie = obtenerEspecieSeleccionada();
+        const cantidad = Math.max(1, parseInt(document.getElementById('cantidadEspecie').value || 1, 10));
+        const efectivo = parseFloat(document.getElementById('efectivoEspecie').value || 0);
+        const total = especie.valor * cantidad;
+
+        if (cantidad > especie.stock) {
+          alert('No hay stock suficiente para esta especie');
+          return;
+        }
+
+        if (efectivo < total) {
+          alert('El efectivo recibido no cubre el valor de la especie');
+          return;
+        }
+
+        const facturaGenerada = `002-001-${String(secuenciaFacturaEspecie).padStart(9, '0')}`;
+        secuenciaFacturaEspecie += 1;
+        especie.stock -= cantidad;
+
+        const transaccion = {
+          fecha: new Date().toLocaleString('es-ES'),
+          tipo: 'Venta de Especie',
+          efectivoRecibido: efectivo,
+          facturasPagadas: [{ mes: especie.nombre, monto: total, concepto: `${cantidad} especie${cantidad > 1 ? 's' : ''}`, tipo: 'completo' }],
+          cambio: efectivo - total,
+          saldoRestante: calcularTotalPendiente(),
+          facturaGenerada,
+          cliente: clienteActual ? clienteActual.nombre : 'CONSUMIDOR FINAL',
+        };
+
+        historialTransacciones.unshift(transaccion);
+        mostrarResultado(transaccion);
+        actualizarHistorialTransacciones();
+        renderizarOpcionesEspecies(especie.codigo);
+        actualizarResumenEspecies();
+        document.getElementById('efectivoEspecie').value = '';
+      }
+
       // Procesar cobro
       function procesarCobro() {
         if (!clienteActual) {
@@ -842,6 +988,12 @@
         const textResultado = document.getElementById('textResultado');
 
         let html = `<div class="font-bold text-emerald-900 mb-2 text-sm">${transaccion.tipo}</div>`;
+        if (transaccion.facturaGenerada) {
+          html += `<div class="rounded bg-white/70 border border-emerald-200 p-2 mb-2 text-xs text-emerald-900">
+            <div><span class="font-bold">Factura:</span> ${transaccion.facturaGenerada}</div>
+            <div><span class="font-bold">Cliente:</span> ${transaccion.cliente}</div>
+          </div>`;
+        }
         html += '<div class="space-y-1 text-emerald-900 border-b pb-2 mb-2 text-xs">';
 
         transaccion.facturasPagadas.forEach((f, idx) => {
@@ -883,6 +1035,15 @@
               <div class="font-semibold text-gray-800 text-xs">${trans.tipo}</div>
               <div class="text-xs text-gray-500">${trans.fecha}</div>
             </div>
+            ${
+              trans.facturaGenerada
+                ? `
+                  <div class="text-xs text-blue-900 bg-blue-50 border border-blue-100 rounded px-2 py-1 mb-1.5">
+                    Factura ${trans.facturaGenerada} · ${trans.cliente}
+                  </div>
+                `
+                : ''
+            }
             <div class="space-y-0.5 text-xs">
               ${trans.facturasPagadas
                 .map(
@@ -906,6 +1067,8 @@
       }
 
       // Inicializar con cliente por defecto
+      renderizarOpcionesEspecies();
+      cambiarModoCaja('planillas');
       cargarCliente(baseClientes['0706323193']);
     </script>
   </body>

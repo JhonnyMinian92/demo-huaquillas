@@ -1,0 +1,1897 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+
+    <title>
+      Módulo de Catastro -
+      Aguas Huaquillas EP
+    </title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      :root {
+        --ocean:
+          #0f3d68;
+
+        --ocean-light:
+          #174f84;
+
+        --slate:
+          #f4f7fb;
+
+        --border:
+          #dbe4ef;
+
+        --text:
+          #162130;
+
+        --muted:
+          #64748b;
+
+        --success:
+          #0f9f6e;
+
+        --danger:
+          #dc2626;
+
+        --warning:
+          #ca8a04;
+      }
+
+      * {
+        box-sizing:
+          border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+
+        height: 100%;
+
+        font-family:
+          Inter,
+          system-ui,
+          sans-serif;
+
+        background:
+          var(--slate);
+
+        color:
+          var(--text);
+
+        overflow: hidden;
+      }
+
+      body {
+        display: flex;
+
+        flex-direction: column;
+      }
+
+      /* =========================
+           HEADER
+        ========================= */
+
+      .topbar {
+        flex-shrink: 0;
+      }
+
+      /* =========================
+           MAIN LAYOUT
+        ========================= */
+
+      .main-layout {
+        flex: 1;
+
+        display: grid;
+
+        grid-template-columns:
+          420px 1fr;
+
+        min-height: 0;
+
+        overflow: hidden;
+      }
+
+      /* =========================
+           SIDEBAR
+        ========================= */
+
+      .sidebar {
+        background: white;
+
+        border-right: 1px solid
+          var(--border);
+
+        display: flex;
+
+        flex-direction: column;
+
+        min-height: 0;
+      }
+
+      .sidebar-header {
+        padding: 20px;
+
+        border-bottom:
+          1px solid
+          var(--border);
+
+        flex-shrink: 0;
+      }
+
+      .sidebar-scroll {
+        flex: 1;
+
+        overflow-y: auto;
+
+        padding: 14px;
+      }
+
+      /* =========================
+           DETAIL
+        ========================= */
+
+      .detail {
+        display: flex;
+
+        flex-direction: column;
+
+        min-height: 0;
+
+        overflow: hidden;
+      }
+
+      .detail-scroll {
+        flex: 1;
+
+        overflow-y: auto;
+
+        padding: 24px;
+      }
+
+      /* =========================
+           SEARCH
+        ========================= */
+
+      .search-input {
+        width: 100%;
+
+        height: 46px;
+
+        border-radius: 12px;
+
+        border:
+          1px solid
+          var(--border);
+
+        padding:
+          0 16px;
+
+        outline: none;
+
+        font-size: 14px;
+
+        transition: 0.2s;
+      }
+
+      .search-input:focus {
+        border-color:
+          var(--ocean-light);
+
+        box-shadow:
+          0 0 0 4px
+          rgba(
+            23,
+            79,
+            132,
+            0.08
+          );
+      }
+
+      /* =========================
+           FILTERS
+        ========================= */
+
+      .chip-group {
+        display: flex;
+
+        gap: 8px;
+
+        margin-top: 14px;
+
+        flex-wrap: wrap;
+      }
+
+      .chip {
+        border:
+          1px solid
+          var(--border);
+
+        background: white;
+
+        border-radius: 999px;
+
+        height: 34px;
+
+        padding:
+          0 14px;
+
+        font-size: 12px;
+
+        font-weight: 700;
+
+        cursor: pointer;
+
+        transition: 0.2s;
+      }
+
+      .chip:hover {
+        background:
+          #f8fafc;
+      }
+
+      .chip.active {
+        background:
+          var(--ocean);
+
+        border-color:
+          var(--ocean);
+
+        color: white;
+      }
+
+      /* =========================
+           CARD
+        ========================= */
+
+      .predio-card {
+        background: white;
+
+        border:
+          1px solid
+          var(--border);
+
+        border-radius: 18px;
+
+        padding: 16px;
+
+        margin-bottom: 12px;
+
+        cursor: pointer;
+
+        transition: 0.2s;
+      }
+
+      .predio-card:hover {
+        transform:
+          translateY(-1px);
+
+        box-shadow:
+          0 10px 20px
+          rgba(
+            15,
+            61,
+            104,
+            0.06
+          );
+      }
+
+      .predio-card.active {
+        border-color:
+          var(--ocean);
+
+        background:
+          #f7fbff;
+      }
+
+      /* =========================
+           BADGES
+        ========================= */
+
+      .badge {
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        height: 28px;
+
+        padding:
+          0 12px;
+
+        border-radius: 999px;
+
+        font-size: 11px;
+
+        font-weight: 800;
+      }
+
+      .badge-success {
+        background:
+          rgba(
+            15,
+            159,
+            110,
+            0.12
+          );
+
+        color:
+          var(--success);
+      }
+
+      .badge-danger {
+        background:
+          rgba(
+            220,
+            38,
+            38,
+            0.12
+          );
+
+        color:
+          var(--danger);
+      }
+
+      .badge-warning {
+        background:
+          rgba(
+            202,
+            138,
+            4,
+            0.12
+          );
+
+        color:
+          var(--warning);
+      }
+
+      .badge-neutral {
+        background:
+          #eef2f7;
+
+        color:
+          #334155;
+      }
+
+      /* =========================
+           PANELS
+        ========================= */
+
+      .panel {
+        background: white;
+
+        border:
+          1px solid
+          var(--border);
+
+        border-radius: 22px;
+
+        overflow: hidden;
+
+        margin-bottom: 18px;
+      }
+
+      .panel-header {
+        padding:
+          18px 22px;
+
+        border-bottom:
+          1px solid
+          var(--border);
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content:
+          space-between;
+      }
+
+      .panel-body {
+        padding: 22px;
+      }
+
+      /* =========================
+           GRID
+        ========================= */
+
+      .info-grid {
+        display: grid;
+
+        grid-template-columns:
+          repeat(
+            auto-fit,
+            minmax(
+              220px,
+              1fr
+            )
+          );
+
+        gap: 16px;
+      }
+
+      /* =========================
+           BUTTONS
+        ========================= */
+
+      .btn {
+        height: 42px;
+
+        border-radius: 12px;
+
+        border: none;
+
+        cursor: pointer;
+
+        padding:
+          0 18px;
+
+        font-size: 13px;
+
+        font-weight: 800;
+
+        transition: 0.2s;
+      }
+
+      .btn-primary {
+        background:
+          var(--ocean);
+
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background:
+          var(--ocean-light);
+      }
+
+      .btn-secondary {
+        background:
+          #eef2f7;
+
+        color:
+          #334155;
+      }
+
+      .btn-secondary:hover {
+        background:
+          #e2e8f0;
+      }
+
+      /* =========================
+           ACTION GRID
+        ========================= */
+
+      .action-grid {
+        display: grid;
+
+        grid-template-columns:
+          repeat(
+            auto-fit,
+            minmax(
+              180px,
+              1fr
+            )
+          );
+
+        gap: 14px;
+      }
+
+      .action-btn {
+        border:
+          1px solid
+          var(--border);
+
+        border-radius: 18px;
+
+        padding: 18px;
+
+        text-align: left;
+
+        background: white;
+
+        cursor: pointer;
+
+        transition: 0.2s;
+      }
+
+      .action-btn:hover {
+        border-color:
+          var(--ocean);
+
+        background:
+          #f8fbff;
+      }
+
+      /* =========================
+           DRAWER
+        ========================= */
+
+      .drawer-overlay {
+        position: fixed;
+
+        inset: 0;
+
+        background:
+          rgba(
+            15,
+            23,
+            42,
+            0.45
+          );
+
+        opacity: 0;
+
+        pointer-events: none;
+
+        transition: 0.25s;
+
+        z-index: 80;
+      }
+
+      .drawer-overlay.open {
+        opacity: 1;
+
+        pointer-events: auto;
+      }
+
+      .drawer {
+        position: fixed;
+
+        top: 0;
+
+        right: -520px;
+
+        width: 520px;
+
+        max-width: 100%;
+
+        height: 100%;
+
+        background: white;
+
+        z-index: 90;
+
+        transition: 0.3s;
+
+        display: flex;
+
+        flex-direction: column;
+      }
+
+      .drawer.open {
+        right: 0;
+      }
+
+      .drawer-header {
+        padding: 24px;
+
+        border-bottom:
+          1px solid
+          var(--border);
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content:
+          space-between;
+      }
+
+      .drawer-body {
+        flex: 1;
+
+        overflow-y: auto;
+
+        padding: 24px;
+      }
+
+      .drawer-footer {
+        padding: 20px;
+
+        border-top:
+          1px solid
+          var(--border);
+
+        display: flex;
+
+        gap: 12px;
+      }
+
+      /* =========================
+           INPUTS
+        ========================= */
+
+      .input,
+      .textarea,
+      .select {
+        width: 100%;
+
+        border:
+          1px solid
+          var(--border);
+
+        border-radius: 14px;
+
+        padding: 14px;
+
+        outline: none;
+
+        font-size: 14px;
+      }
+
+      .textarea {
+        min-height: 120px;
+
+        resize: vertical;
+      }
+
+      .input:focus,
+      .textarea:focus,
+      .select:focus {
+        border-color:
+          var(--ocean);
+
+        box-shadow:
+          0 0 0 4px
+          rgba(
+            15,
+            61,
+            104,
+            0.08
+          );
+      }
+
+      /* =========================
+           MAP
+        ========================= */
+
+      .map-box {
+        height: 260px;
+
+        border-radius: 18px;
+
+        background:
+          linear-gradient(
+            135deg,
+            #dbeafe,
+            #eff6ff
+          );
+
+        border:
+          1px solid
+          var(--border);
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content:
+          center;
+
+        color:
+          #475569;
+
+        font-weight: 700;
+      }
+
+      /* =========================
+           UPLOAD
+        ========================= */
+
+      .upload-zone {
+        border:
+          2px dashed
+          #cbd5e1;
+
+        border-radius: 18px;
+
+        padding: 28px;
+
+        text-align: center;
+
+        cursor: pointer;
+
+        display: block;
+      }
+
+      .upload-zone:hover {
+        border-color:
+          var(--ocean);
+
+        background:
+          #f8fbff;
+      }
+
+      /* =========================
+           TOAST
+        ========================= */
+
+      .toast {
+        position: fixed;
+
+        bottom: 24px;
+
+        right: 24px;
+
+        background:
+          #0f172a;
+
+        color: white;
+
+        padding:
+          14px 18px;
+
+        border-radius: 14px;
+
+        font-size: 13px;
+
+        opacity: 0;
+
+        transform:
+          translateY(12px);
+
+        transition: 0.25s;
+
+        z-index: 120;
+      }
+
+      .toast.show {
+        opacity: 1;
+
+        transform:
+          translateY(0);
+      }
+
+      /* =========================
+           MOBILE
+        ========================= */
+
+      @media (
+        max-width: 1024px
+      ) {
+        html,
+        body {
+          overflow: auto;
+        }
+
+        .main-layout {
+          grid-template-columns:
+            1fr;
+        }
+
+        .sidebar {
+          border-right: none;
+
+          border-bottom:
+            1px solid
+            var(--border);
+        }
+
+        .detail {
+          min-height: auto;
+        }
+
+        .detail-scroll {
+          overflow: visible;
+        }
+
+        .drawer {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ========================= -->
+    <!-- HEADER -->
+    <!-- ========================= -->
+
+    <header
+      class="topbar bg-gradient-to-r from-blue-900 to-blue-800 shadow-md p-4 flex justify-between items-center"
+    >
+      <div
+        class="flex items-center gap-3"
+      >
+        <div class="text-3xl">
+          💧
+        </div>
+
+        <div>
+          <h1
+            class="text-lg font-bold text-white"
+          >
+            AGUAS HUAQUILLAS
+          </h1>
+
+          <p
+            class="text-xs text-blue-100"
+          >
+            Sistema de Catastro
+          </p>
+        </div>
+      </div>
+
+      <div class="text-right">
+        <p
+          class="text-sm font-semibold text-white"
+        >
+          Asesor:
+          <span
+            id="nombreAsesor"
+            >Carlos Mendoza</span
+          >
+        </p>
+
+        <p
+          class="text-xs text-blue-100"
+        >
+          Sesión Abierta -
+          <span
+            id="horaActual"
+          ></span>
+        </p>
+      </div>
+    </header>
+
+    <!-- ========================= -->
+    <!-- MAIN -->
+    <!-- ========================= -->
+
+    <main class="main-layout">
+      <!-- ========================= -->
+      <!-- SIDEBAR -->
+      <!-- ========================= -->
+
+      <aside class="sidebar">
+        <div
+          class="sidebar-header"
+        >
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="Buscar por nombre, cédula, ID o medidor..."
+          />
+
+          <div
+            class="chip-group"
+          >
+            <button
+              class="chip active"
+            >
+              Todos
+            </button>
+
+            <button class="chip">
+              Activos
+            </button>
+
+            <button class="chip">
+              Suspendidos
+            </button>
+
+            <button class="chip">
+              Fugas
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="sidebar-scroll"
+          id="prediosContainer"
+        ></div>
+      </aside>
+
+      <!-- ========================= -->
+      <!-- DETAIL -->
+      <!-- ========================= -->
+
+      <section class="detail">
+        <div
+          class="detail-scroll"
+        >
+          <!-- ========================= -->
+          <!-- HEADER DETAIL -->
+          <!-- ========================= -->
+
+          <section
+            class="panel"
+          >
+            <div
+              class="panel-body"
+            >
+              <div
+                class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6"
+              >
+                <div>
+                  <h2
+                    id="predioNombre"
+                    class="text-[28px] font-black tracking-tight"
+                  >
+                    --
+                  </h2>
+
+                  <div
+                    class="flex flex-wrap gap-2 mt-4"
+                  ></div>
+                </div>
+
+                <div>
+                  <button
+                    onclick="imprimirFicha()"
+                    class="btn btn-secondary"
+                  >
+                    Imprimir PDF
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ========================= -->
+          <!-- INFORMACIÓN -->
+          <!-- ========================= -->
+
+          <section
+            class="panel"
+          >
+            <div
+              class="panel-header"
+            >
+              <h3
+                class="font-extrabold text-[14px]"
+              >
+                Información del
+                Predio
+              </h3>
+            </div>
+
+            <div
+              class="panel-body"
+            >
+              <div
+                class="info-grid"
+              >
+                <div>
+                  <div
+                    class="text-[11px] font-bold text-slate-500 uppercase"
+                  >
+                    Dirección
+                  </div>
+
+                  <div
+                    id="direccionText"
+                    class="mt-2 font-semibold"
+                  ></div>
+                </div>
+
+                <div>
+                  <div
+                    class="text-[11px] font-bold text-slate-500 uppercase"
+                  >
+                    Cédula / RUC
+                  </div>
+
+                  <div
+                    id="cedulaText"
+                    class="mt-2 font-semibold"
+                  ></div>
+                </div>
+
+                <div>
+                  <div
+                    class="text-[11px] font-bold text-slate-500 uppercase"
+                  >
+                    Medidor
+                  </div>
+
+                  <div
+                    id="medidorText"
+                    class="mt-2 font-semibold"
+                  ></div>
+                </div>
+
+                <div>
+                  <div
+                    class="text-[11px] font-bold text-slate-500 uppercase"
+                  >
+                    Coordenadas
+                  </div>
+
+                  <div
+                    id="coords"
+                    class="mt-2 font-semibold"
+                  ></div>
+                </div>
+              </div>
+
+              <div
+                class="map-box mt-8"
+              >
+                Visualizador
+                Geográfico
+              </div>
+            </div>
+          </section>
+
+          <!-- ========================= -->
+          <!-- OPERACIONES -->
+          <!-- ========================= -->
+
+          <section
+            class="panel"
+          >
+            <div
+              class="panel-header"
+            >
+              <div>
+                <h3
+                  class="font-extrabold text-[14px]"
+                >
+                  Operaciones
+                </h3>
+
+                <p
+                  class="text-[11px] text-slate-500 mt-1"
+                >
+                  Acciones
+                  disponibles
+                  según estado
+                  del servicio
+                </p>
+              </div>
+            </div>
+
+            <div
+              class="panel-body"
+            >
+              <div
+                class="action-grid"
+                id="accionesContainer"
+              ></div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <!-- ========================= -->
+    <!-- DRAWER -->
+    <!-- ========================= -->
+
+    <div
+      id="drawerOverlay"
+      class="drawer-overlay"
+      onclick="cerrarDrawer()"
+    ></div>
+
+    <aside
+      id="drawer"
+      class="drawer"
+    >
+      <div
+        class="drawer-header"
+      >
+        <h2
+          id="drawerTitle"
+          class="text-[22px] font-black"
+        >
+          Operación
+        </h2>
+
+        <button
+          onclick="cerrarDrawer()"
+          class="text-2xl"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div
+        class="drawer-body"
+      ></div>
+
+      <div
+        class="drawer-footer"
+      >
+        <button
+          onclick="cerrarDrawer()"
+          class="btn btn-secondary w-full"
+        >
+          Cancelar
+        </button>
+
+        <button
+          onclick="guardarOperacion()"
+          class="btn btn-primary w-full"
+        >
+          Guardar
+        </button>
+      </div>
+    </aside>
+
+    <!-- ========================= -->
+    <!-- TOAST -->
+    <!-- ========================= -->
+
+    <div
+      id="toast"
+      class="toast"
+    ></div>
+
+    <!-- ========================= -->
+    <!-- SCRIPT -->
+    <!-- ========================= -->
+
+    <script>
+      const predios =
+        [
+          {
+            id: 'PRE-0001',
+
+            nombre:
+              'COMERCIAL LOS ANDES',
+
+            cedula:
+              '0791784556001',
+
+            direccion:
+              'Av. Hualtaco y Arenillas',
+
+            categoria:
+              'Comercial',
+
+            tarifa:
+              'consumo',
+
+            medidor:
+              'AH-004518',
+
+            estado:
+              'activo',
+
+            incidente:
+              null,
+
+            gps:
+              '-3.4810, -80.2309',
+          },
+
+          {
+            id: 'PRE-0002',
+
+            nombre:
+              'ROSA CÓRDOVA PINEDA',
+
+            cedula:
+              '0702381199',
+
+            direccion:
+              'Barrio 9 de Octubre',
+
+            categoria:
+              'Doméstico',
+
+            tarifa:
+              'base',
+
+            medidor:
+              'SIN MEDIDOR',
+
+            estado:
+              'suspendido',
+
+            incidente:
+              'fuga',
+
+            gps:
+              '-3.4801, -80.2315',
+          },
+
+          {
+            id: 'PRE-0003',
+
+            nombre:
+              'HOTEL FRONTERA AZUL',
+
+            cedula:
+              '0790011223001',
+
+            direccion:
+              'Av. República 1210',
+
+            categoria:
+              'Comercial',
+
+            tarifa:
+              'consumo',
+
+            medidor:
+              'AH-006789',
+
+            estado:
+              'activo',
+
+            incidente:
+              null,
+
+            gps:
+              '-3.4822, -80.2320',
+          },
+        ];
+
+      let filtroActual =
+        'todos';
+
+      let predioSeleccionado =
+        predios[0];
+
+      function actualizarHora() {
+        const hora =
+          new Date().toLocaleTimeString(
+            'es-EC',
+            {
+              hour:
+                '2-digit',
+
+              minute:
+                '2-digit',
+            }
+          );
+
+        document.getElementById(
+          'horaActual'
+        ).textContent =
+          hora;
+      }
+
+      setInterval(
+        actualizarHora,
+        1000
+      );
+
+      actualizarHora();
+
+      function renderPredios() {
+        const container =
+          document.getElementById(
+            'prediosContainer'
+          );
+
+        const busqueda =
+          document
+            .getElementById(
+              'searchInput'
+            )
+            .value.toLowerCase();
+
+        const resultado =
+          predios.filter(
+            (predio) => {
+              const coincideTexto =
+                predio.nombre
+                  .toLowerCase()
+                  .includes(
+                    busqueda
+                  ) ||
+                predio.cedula.includes(
+                  busqueda
+                ) ||
+                predio.id
+                  .toLowerCase()
+                  .includes(
+                    busqueda
+                  ) ||
+                predio.medidor
+                  .toLowerCase()
+                  .includes(
+                    busqueda
+                  );
+
+              let coincideFiltro =
+                true;
+
+              if (
+                filtroActual ===
+                'activos'
+              ) {
+                coincideFiltro =
+                  predio.estado ===
+                  'activo';
+              }
+
+              if (
+                filtroActual ===
+                'suspendidos'
+              ) {
+                coincideFiltro =
+                  predio.estado ===
+                  'suspendido';
+              }
+
+              if (
+                filtroActual ===
+                'fugas'
+              ) {
+                coincideFiltro =
+                  predio.incidente ===
+                  'fuga';
+              }
+
+              return (
+                coincideTexto &&
+                coincideFiltro
+              );
+            }
+          );
+
+        container.innerHTML =
+          resultado
+            .map(
+              (
+                predio
+              ) => `
+            <div
+              class="predio-card ${
+                predioSeleccionado.id ===
+                predio.id
+                  ? 'active'
+                  : ''
+              }"
+
+              onclick="seleccionarPredio('${predio.id}')"
+            >
+              <div class="flex justify-between gap-3">
+                <div>
+                  <div class="font-black text-[13px]">
+                    ${predio.nombre}
+                  </div>
+
+                  <div class="text-[11px] text-slate-500 mt-1">
+                    ${predio.id}
+                  </div>
+                </div>
+
+                <span class="badge badge-neutral">
+                  ${predio.categoria}
+                </span>
+              </div>
+
+              <div class="flex flex-wrap gap-2 mt-4">
+                ${
+                  predio.estado ===
+                  'activo'
+                    ? `
+                  <span class="badge badge-success">
+                    Activo
+                  </span>
+                `
+                    : `
+                  <span class="badge badge-danger">
+                    Suspendido
+                  </span>
+                `
+                }
+
+                ${
+                  predio.incidente ===
+                  'fuga'
+                    ? `
+                  <span class="badge badge-warning">
+                    Fuga
+                  </span>
+                `
+                    : ''
+                }
+              </div>
+            </div>
+          `
+            )
+            .join('');
+      }
+
+      function seleccionarPredio(
+        id
+      ) {
+        predioSeleccionado =
+          predios.find(
+            (p) =>
+              p.id === id
+          );
+
+        renderPredios();
+
+        renderDetalle();
+      }
+
+      function renderDetalle() {
+        const p =
+          predioSeleccionado;
+
+        document.getElementById(
+          'predioNombre'
+        ).textContent =
+          p.nombre;
+
+        document.getElementById(
+          'direccionText'
+        ).textContent =
+          p.direccion;
+
+        document.getElementById(
+          'cedulaText'
+        ).textContent =
+          p.cedula;
+
+        document.getElementById(
+          'medidorText'
+        ).textContent =
+          p.medidor;
+
+        document.getElementById(
+          'coords'
+        ).textContent =
+          p.gps;
+
+        const badges =
+          [];
+
+        badges.push(`
+          <span class="badge badge-neutral">
+            ${p.categoria}
+          </span>
+        `);
+
+        badges.push(`
+          <span class="badge badge-neutral">
+            ${
+              p.tarifa ===
+              'consumo'
+                ? 'Por Consumo'
+                : 'Base'
+            }
+          </span>
+        `);
+
+        if (
+          p.estado ===
+          'activo'
+        ) {
+          badges.push(`
+            <span class="badge badge-success">
+              Activo
+            </span>
+          `);
+        } else {
+          badges.push(`
+            <span class="badge badge-danger">
+              Suspendido
+            </span>
+          `);
+        }
+
+        if (
+          p.incidente ===
+          'fuga'
+        ) {
+          badges.push(`
+            <span class="badge badge-warning">
+              Fuga Detectada
+            </span>
+          `);
+        }
+
+        document.querySelector(
+          '#predioNombre + div'
+        ).innerHTML =
+          badges.join('');
+
+        renderOperaciones();
+      }
+
+      function renderOperaciones() {
+        const container =
+          document.getElementById(
+            'accionesContainer'
+          );
+
+        const p =
+          predioSeleccionado;
+
+        const acciones =
+          [];
+
+        if (
+          p.estado ===
+          'activo'
+        ) {
+          acciones.push(
+            {
+              id: 'suspension',
+
+              icono:
+                '⛔',
+
+              titulo:
+                'Suspender Servicio',
+
+              subtitulo:
+                'Bloqueo operativo',
+            }
+          );
+        }
+
+        if (
+          p.estado ===
+          'suspendido'
+        ) {
+          acciones.push(
+            {
+              id: 'reconexion',
+
+              icono:
+                '🔄',
+
+              titulo:
+                'Reconectar Servicio',
+
+              subtitulo:
+                'Restablecer suministro',
+            }
+          );
+        }
+
+        acciones.push(
+          {
+            id: 'inspeccion',
+
+            icono:
+              '📍',
+
+            titulo:
+              'Inspección',
+
+            subtitulo:
+              'Verificación en campo',
+          },
+
+          {
+            id: 'medidor',
+
+            icono:
+              '📟',
+
+            titulo:
+              'Cambio de Medidor',
+
+            subtitulo:
+              'Actualización técnica',
+          },
+
+          {
+            id: 'fuga',
+
+            icono:
+              '💧',
+
+            titulo:
+              'Reportar Fuga',
+
+            subtitulo:
+              'Enviar mantenimiento',
+          },
+
+          {
+            id: 'orden',
+
+            icono:
+              '🔧',
+
+            titulo:
+              'Orden Técnica',
+
+            subtitulo:
+              'Mantenimiento o reparación',
+          }
+        );
+
+        container.innerHTML =
+          acciones
+            .map(
+              (
+                accion
+              ) => `
+            <button
+              class="action-btn"
+              onclick="abrirDrawer('${accion.id}')"
+            >
+              <div class="text-[24px]">
+                ${accion.icono}
+              </div>
+
+              <div class="mt-3 text-[13px] font-black">
+                ${accion.titulo}
+              </div>
+
+              <div class="text-[11px] text-slate-500 mt-1">
+                ${accion.subtitulo}
+              </div>
+            </button>
+          `
+            )
+            .join('');
+      }
+
+      function abrirDrawer(
+        tipo
+      ) {
+        document
+          .getElementById(
+            'drawer'
+          )
+          .classList.add(
+            'open'
+          );
+
+        document
+          .getElementById(
+            'drawerOverlay'
+          )
+          .classList.add(
+            'open'
+          );
+
+        const titulos =
+          {
+            suspension:
+              'Suspensión de Servicio',
+
+            reconexion:
+              'Reconexión de Servicio',
+
+            inspeccion:
+              'Inspección',
+
+            medidor:
+              'Cambio de Medidor',
+
+            fuga:
+              'Reporte de Fuga',
+
+            orden:
+              'Orden Técnica',
+          };
+
+        document.getElementById(
+          'drawerTitle'
+        ).textContent =
+          titulos[tipo];
+
+        let extra = '';
+
+        if (
+          tipo ===
+          'orden'
+        ) {
+          extra = `
+            <div>
+              <label class="text-[12px] font-bold text-slate-600">
+                Tipo de Orden
+              </label>
+
+              <select class="select mt-2">
+                <option>
+                  Reparación
+                </option>
+
+                <option>
+                  Mantenimiento
+                </option>
+
+                <option>
+                  Revisión Técnica
+                </option>
+
+                <option>
+                  Inspección Especial
+                </option>
+              </select>
+            </div>
+          `;
+        }
+
+        document.querySelector(
+          '.drawer-body'
+        ).innerHTML = `
+          <div class="space-y-6">
+
+            <div>
+              <label class="text-[12px] font-bold text-slate-600">
+                Observaciones
+              </label>
+
+              <textarea
+                class="textarea mt-2"
+                placeholder="Detalle operativo..."
+              ></textarea>
+            </div>
+
+            ${extra}
+
+            <div>
+              <label class="text-[12px] font-bold text-slate-600">
+                Evidencia Fotográfica
+              </label>
+
+              <label class="upload-zone mt-2">
+                <div class="text-[42px]">
+                  📷
+                </div>
+
+                <div class="mt-3 text-[13px] font-black">
+                  Capturar Evidencia
+                </div>
+
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                />
+              </label>
+            </div>
+
+            <div>
+              <label class="text-[12px] font-bold text-slate-600">
+                Coordenadas GPS
+              </label>
+
+              <input
+                class="input mt-2"
+                readonly
+                value="${predioSeleccionado.gps}"
+              />
+            </div>
+
+          </div>
+        `;
+      }
+
+      function cerrarDrawer() {
+        document
+          .getElementById(
+            'drawer'
+          )
+          .classList.remove(
+            'open'
+          );
+
+        document
+          .getElementById(
+            'drawerOverlay'
+          )
+          .classList.remove(
+            'open'
+          );
+      }
+
+      function guardarOperacion() {
+        mostrarToast(
+          'Operación registrada correctamente'
+        );
+
+        cerrarDrawer();
+      }
+
+      function imprimirFicha() {
+        window.print();
+      }
+
+      function mostrarToast(
+        mensaje
+      ) {
+        const toast =
+          document.getElementById(
+            'toast'
+          );
+
+        toast.textContent =
+          mensaje;
+
+        toast.classList.add(
+          'show'
+        );
+
+        clearTimeout(
+          window.toastTimer
+        );
+
+        window.toastTimer =
+          setTimeout(() => {
+            toast.classList.remove(
+              'show'
+            );
+          }, 2500);
+      }
+
+      document
+        .querySelectorAll(
+          '.chip'
+        )
+        .forEach((chip) => {
+          chip.addEventListener(
+            'click',
+            function () {
+              document
+                .querySelectorAll(
+                  '.chip'
+                )
+                .forEach((c) =>
+                  c.classList.remove(
+                    'active'
+                  )
+                );
+
+              this.classList.add(
+                'active'
+              );
+
+              const texto =
+                this.innerText.toLowerCase();
+
+              if (
+                texto.includes(
+                  'activo'
+                )
+              ) {
+                filtroActual =
+                  'activos';
+              } else if (
+                texto.includes(
+                  'suspendido'
+                )
+              ) {
+                filtroActual =
+                  'suspendidos';
+              } else if (
+                texto.includes(
+                  'fuga'
+                )
+              ) {
+                filtroActual =
+                  'fugas';
+              } else {
+                filtroActual =
+                  'todos';
+              }
+
+              renderPredios();
+            }
+          );
+        });
+
+      document
+        .getElementById(
+          'searchInput'
+        )
+        .addEventListener(
+          'input',
+          renderPredios
+        );
+
+      renderPredios();
+
+      renderDetalle();
+    </script>
+  </body>
+</html>
