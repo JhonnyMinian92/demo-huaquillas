@@ -1,52 +1,36 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>
-      Módulo de Catastro -
-      Aguas Huaquillas EP
-    </title>
+    <title>Módulo de Catastro - Aguas Huaquillas EP</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
       :root {
-        --ocean:
-          #0f3d68;
+        --ocean: #0f3d68;
 
-        --ocean-light:
-          #174f84;
+        --ocean-light: #174f84;
 
-        --slate:
-          #f4f7fb;
+        --slate: #f4f7fb;
 
-        --border:
-          #dbe4ef;
+        --border: #dbe4ef;
 
-        --text:
-          #162130;
+        --text: #162130;
 
-        --muted:
-          #64748b;
+        --muted: #64748b;
 
-        --success:
-          #0f9f6e;
+        --success: #0f9f6e;
 
-        --danger:
-          #dc2626;
+        --danger: #dc2626;
 
-        --warning:
-          #ca8a04;
+        --warning: #ca8a04;
       }
 
       * {
-        box-sizing:
-          border-box;
+        box-sizing: border-box;
       }
 
       html,
@@ -55,16 +39,11 @@
 
         height: 100%;
 
-        font-family:
-          Inter,
-          system-ui,
-          sans-serif;
+        font-family: Inter, system-ui, sans-serif;
 
-        background:
-          var(--slate);
+        background: var(--slate);
 
-        color:
-          var(--text);
+        color: var(--text);
 
         overflow: hidden;
       }
@@ -92,8 +71,7 @@
 
         display: grid;
 
-        grid-template-columns:
-          420px 1fr;
+        grid-template-columns: 420px 1fr;
 
         min-height: 0;
 
@@ -107,8 +85,7 @@
       .sidebar {
         background: white;
 
-        border-right: 1px solid
-          var(--border);
+        border-right: 1px solid var(--border);
 
         display: flex;
 
@@ -120,9 +97,7 @@
       .sidebar-header {
         padding: 20px;
 
-        border-bottom:
-          1px solid
-          var(--border);
+        border-bottom: 1px solid var(--border);
 
         flex-shrink: 0;
       }
@@ -168,12 +143,9 @@
 
         border-radius: 12px;
 
-        border:
-          1px solid
-          var(--border);
+        border: 1px solid var(--border);
 
-        padding:
-          0 16px;
+        padding: 0 16px;
 
         outline: none;
 
@@ -183,17 +155,9 @@
       }
 
       .search-input:focus {
-        border-color:
-          var(--ocean-light);
+        border-color: var(--ocean-light);
 
-        box-shadow:
-          0 0 0 4px
-          rgba(
-            23,
-            79,
-            132,
-            0.08
-          );
+        box-shadow: 0 0 0 4px rgba(23, 79, 132, 0.08);
       }
 
       /* =========================
@@ -211,9 +175,7 @@
       }
 
       .chip {
-        border:
-          1px solid
-          var(--border);
+        border: 1px solid var(--border);
 
         background: white;
 
@@ -221,8 +183,7 @@
 
         height: 34px;
 
-        padding:
-          0 14px;
+        padding: 0 14px;
 
         font-size: 12px;
 
@@ -234,16 +195,13 @@
       }
 
       .chip:hover {
-        background:
-          #f8fafc;
+        background: #f8fafc;
       }
 
       .chip.active {
-        background:
-          var(--ocean);
+        background: var(--ocean);
 
-        border-color:
-          var(--ocean);
+        border-color: var(--ocean);
 
         color: white;
       }
@@ -255,9 +213,7 @@
       .predio-card {
         background: white;
 
-        border:
-          1px solid
-          var(--border);
+        border: 1px solid var(--border);
 
         border-radius: 18px;
 
@@ -271,25 +227,15 @@
       }
 
       .predio-card:hover {
-        transform:
-          translateY(-1px);
+        transform: translateY(-1px);
 
-        box-shadow:
-          0 10px 20px
-          rgba(
-            15,
-            61,
-            104,
-            0.06
-          );
+        box-shadow: 0 10px 20px rgba(15, 61, 104, 0.06);
       }
 
       .predio-card.active {
-        border-color:
-          var(--ocean);
+        border-color: var(--ocean);
 
-        background:
-          #f7fbff;
+        background: #f7fbff;
       }
 
       /* =========================
@@ -305,8 +251,7 @@
 
         height: 28px;
 
-        padding:
-          0 12px;
+        padding: 0 12px;
 
         border-radius: 999px;
 
@@ -316,50 +261,27 @@
       }
 
       .badge-success {
-        background:
-          rgba(
-            15,
-            159,
-            110,
-            0.12
-          );
+        background: rgba(15, 159, 110, 0.12);
 
-        color:
-          var(--success);
+        color: var(--success);
       }
 
       .badge-danger {
-        background:
-          rgba(
-            220,
-            38,
-            38,
-            0.12
-          );
+        background: rgba(220, 38, 38, 0.12);
 
-        color:
-          var(--danger);
+        color: var(--danger);
       }
 
       .badge-warning {
-        background:
-          rgba(
-            202,
-            138,
-            4,
-            0.12
-          );
+        background: rgba(202, 138, 4, 0.12);
 
-        color:
-          var(--warning);
+        color: var(--warning);
       }
 
       .badge-neutral {
-        background:
-          #eef2f7;
+        background: #eef2f7;
 
-        color:
-          #334155;
+        color: #334155;
       }
 
       /* =========================
@@ -369,9 +291,7 @@
       .panel {
         background: white;
 
-        border:
-          1px solid
-          var(--border);
+        border: 1px solid var(--border);
 
         border-radius: 22px;
 
@@ -381,19 +301,15 @@
       }
 
       .panel-header {
-        padding:
-          18px 22px;
+        padding: 18px 22px;
 
-        border-bottom:
-          1px solid
-          var(--border);
+        border-bottom: 1px solid var(--border);
 
         display: flex;
 
         align-items: center;
 
-        justify-content:
-          space-between;
+        justify-content: space-between;
       }
 
       .panel-body {
@@ -407,14 +323,7 @@
       .info-grid {
         display: grid;
 
-        grid-template-columns:
-          repeat(
-            auto-fit,
-            minmax(
-              220px,
-              1fr
-            )
-          );
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 
         gap: 16px;
       }
@@ -432,8 +341,7 @@
 
         cursor: pointer;
 
-        padding:
-          0 18px;
+        padding: 0 18px;
 
         font-size: 13px;
 
@@ -443,73 +351,143 @@
       }
 
       .btn-primary {
-        background:
-          var(--ocean);
+        background: var(--ocean);
 
         color: white;
       }
 
       .btn-primary:hover {
-        background:
-          var(--ocean-light);
+        background: var(--ocean-light);
       }
 
       .btn-secondary {
-        background:
-          #eef2f7;
+        background: #eef2f7;
 
-        color:
-          #334155;
+        color: #334155;
       }
 
       .btn-secondary:hover {
-        background:
-          #e2e8f0;
+        background: #e2e8f0;
       }
 
       /* =========================
-           ACTION GRID
-        ========================= */
+   ACTION GRID
+========================= */
 
       .action-grid {
         display: grid;
 
-        grid-template-columns:
-          repeat(
-            auto-fit,
-            minmax(
-              180px,
-              1fr
-            )
-          );
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 
-        gap: 14px;
+        gap: 12px;
       }
 
       .action-btn {
-        border:
-          1px solid
-          var(--border);
+        border: 1px solid #d7e0ea;
 
-        border-radius: 18px;
+        border-radius: 14px;
 
-        padding: 18px;
+        padding: 16px 18px;
 
         text-align: left;
 
-        background: white;
+        background: #ffffff;
 
         cursor: pointer;
 
-        transition: 0.2s;
+        transition: 0.18s;
+
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 14px;
+
+        position: relative;
       }
 
       .action-btn:hover {
-        border-color:
-          var(--ocean);
+        border-color: #0f3d68;
 
-        background:
-          #f8fbff;
+        background: #f9fbfd;
+
+        box-shadow: 0 4px 14px rgba(15, 61, 104, 0.06);
+      }
+
+      .action-btn::before {
+        content: '';
+
+        position: absolute;
+
+        left: 0;
+
+        top: 0;
+
+        bottom: 0;
+
+        width: 4px;
+
+        background: #0f3d68;
+
+        border-radius: 14px 0 0 14px;
+
+        opacity: 0;
+
+        transition: 0.18s;
+      }
+
+      .action-btn:hover::before {
+        opacity: 1;
+      }
+
+      .action-icon {
+        width: 42px;
+
+        height: 42px;
+
+        border-radius: 10px;
+
+        background: #eef3f8;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        color: #0f3d68;
+      }
+
+      .action-icon svg {
+        width: 18px;
+
+        height: 18px;
+      }
+
+      .action-content {
+        flex: 1;
+      }
+
+      .action-title {
+        font-size: 13px;
+
+        font-weight: 800;
+
+        color: #0f172a;
+
+        line-height: 1.2;
+      }
+
+      .action-subtitle {
+        font-size: 11px;
+
+        color: #64748b;
+
+        margin-top: 4px;
+
+        line-height: 1.4;
       }
 
       /* =========================
@@ -521,13 +499,7 @@
 
         inset: 0;
 
-        background:
-          rgba(
-            15,
-            23,
-            42,
-            0.45
-          );
+        background: rgba(15, 23, 42, 0.45);
 
         opacity: 0;
 
@@ -575,16 +547,13 @@
       .drawer-header {
         padding: 24px;
 
-        border-bottom:
-          1px solid
-          var(--border);
+        border-bottom: 1px solid var(--border);
 
         display: flex;
 
         align-items: center;
 
-        justify-content:
-          space-between;
+        justify-content: space-between;
       }
 
       .drawer-body {
@@ -598,9 +567,7 @@
       .drawer-footer {
         padding: 20px;
 
-        border-top:
-          1px solid
-          var(--border);
+        border-top: 1px solid var(--border);
 
         display: flex;
 
@@ -616,9 +583,7 @@
       .select {
         width: 100%;
 
-        border:
-          1px solid
-          var(--border);
+        border: 1px solid var(--border);
 
         border-radius: 14px;
 
@@ -638,17 +603,9 @@
       .input:focus,
       .textarea:focus,
       .select:focus {
-        border-color:
-          var(--ocean);
+        border-color: var(--ocean);
 
-        box-shadow:
-          0 0 0 4px
-          rgba(
-            15,
-            61,
-            104,
-            0.08
-          );
+        box-shadow: 0 0 0 4px rgba(15, 61, 104, 0.08);
       }
 
       /* =========================
@@ -660,26 +617,17 @@
 
         border-radius: 18px;
 
-        background:
-          linear-gradient(
-            135deg,
-            #dbeafe,
-            #eff6ff
-          );
+        background: linear-gradient(135deg, #dbeafe, #eff6ff);
 
-        border:
-          1px solid
-          var(--border);
+        border: 1px solid var(--border);
 
         display: flex;
 
         align-items: center;
 
-        justify-content:
-          center;
+        justify-content: center;
 
-        color:
-          #475569;
+        color: #475569;
 
         font-weight: 700;
       }
@@ -689,9 +637,7 @@
         ========================= */
 
       .upload-zone {
-        border:
-          2px dashed
-          #cbd5e1;
+        border: 2px dashed #cbd5e1;
 
         border-radius: 18px;
 
@@ -705,11 +651,9 @@
       }
 
       .upload-zone:hover {
-        border-color:
-          var(--ocean);
+        border-color: var(--ocean);
 
-        background:
-          #f8fbff;
+        background: #f8fbff;
       }
 
       /* =========================
@@ -723,13 +667,11 @@
 
         right: 24px;
 
-        background:
-          #0f172a;
+        background: #0f172a;
 
         color: white;
 
-        padding:
-          14px 18px;
+        padding: 14px 18px;
 
         border-radius: 14px;
 
@@ -737,8 +679,7 @@
 
         opacity: 0;
 
-        transform:
-          translateY(12px);
+        transform: translateY(12px);
 
         transition: 0.25s;
 
@@ -748,33 +689,27 @@
       .toast.show {
         opacity: 1;
 
-        transform:
-          translateY(0);
+        transform: translateY(0);
       }
 
       /* =========================
            MOBILE
         ========================= */
 
-      @media (
-        max-width: 1024px
-      ) {
+      @media (max-width: 1024px) {
         html,
         body {
           overflow: auto;
         }
 
         .main-layout {
-          grid-template-columns:
-            1fr;
+          grid-template-columns: 1fr;
         }
 
         .sidebar {
           border-right: none;
 
-          border-bottom:
-            1px solid
-            var(--border);
+          border-bottom: 1px solid var(--border);
         }
 
         .detail {
@@ -797,49 +732,26 @@
     <!-- HEADER -->
     <!-- ========================= -->
 
-    <header
-      class="topbar bg-gradient-to-r from-blue-900 to-blue-800 shadow-md p-4 flex justify-between items-center"
-    >
-      <div
-        class="flex items-center gap-3"
-      >
-        <div class="text-3xl">
-          💧
-        </div>
+    <header class="topbar bg-gradient-to-r from-blue-900 to-blue-800 shadow-md p-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="text-3xl">💧</div>
 
         <div>
-          <h1
-            class="text-lg font-bold text-white"
-          >
-            AGUAS HUAQUILLAS
-          </h1>
+          <h1 class="text-lg font-bold text-white">AGUAS HUAQUILLAS</h1>
 
-          <p
-            class="text-xs text-blue-100"
-          >
-            Sistema de Catastro
-          </p>
+          <p class="text-xs text-blue-100">Sistema de Catastro</p>
         </div>
       </div>
 
       <div class="text-right">
-        <p
-          class="text-sm font-semibold text-white"
-        >
+        <p class="text-sm font-semibold text-white">
           Asesor:
-          <span
-            id="nombreAsesor"
-            >Carlos Mendoza</span
-          >
+          <span id="nombreAsesor">Carlos Mendoza</span>
         </p>
 
-        <p
-          class="text-xs text-blue-100"
-        >
+        <p class="text-xs text-blue-100">
           Sesión Abierta -
-          <span
-            id="horaActual"
-          ></span>
+          <span id="horaActual"></span>
         </p>
       </div>
     </header>
@@ -854,43 +766,21 @@
       <!-- ========================= -->
 
       <aside class="sidebar">
-        <div
-          class="sidebar-header"
-        >
-          <input
-            type="text"
-            id="searchInput"
-            class="search-input"
-            placeholder="Buscar por nombre, cédula, ID o medidor..."
-          />
+        <div class="sidebar-header">
+          <input type="text" id="searchInput" class="search-input" placeholder="Buscar por nombre, cédula, ID o medidor..." />
 
-          <div
-            class="chip-group"
-          >
-            <button
-              class="chip active"
-            >
-              Todos
-            </button>
+          <div class="chip-group">
+            <button class="chip active">Todos</button>
 
-            <button class="chip">
-              Activos
-            </button>
+            <button class="chip">Activos</button>
 
-            <button class="chip">
-              Suspendidos
-            </button>
+            <button class="chip">Suspendidos</button>
 
-            <button class="chip">
-              Fugas
-            </button>
+            <button class="chip">Fugas</button>
           </div>
         </div>
 
-        <div
-          class="sidebar-scroll"
-          id="prediosContainer"
-        ></div>
+        <div class="sidebar-scroll" id="prediosContainer"></div>
       </aside>
 
       <!-- ========================= -->
@@ -898,42 +788,22 @@
       <!-- ========================= -->
 
       <section class="detail">
-        <div
-          class="detail-scroll"
-        >
+        <div class="detail-scroll">
           <!-- ========================= -->
           <!-- HEADER DETAIL -->
           <!-- ========================= -->
 
-          <section
-            class="panel"
-          >
-            <div
-              class="panel-body"
-            >
-              <div
-                class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6"
-              >
+          <section class="panel">
+            <div class="panel-body">
+              <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
                 <div>
-                  <h2
-                    id="predioNombre"
-                    class="text-[28px] font-black tracking-tight"
-                  >
-                    --
-                  </h2>
+                  <h2 id="predioNombre" class="text-[28px] font-black tracking-tight">--</h2>
 
-                  <div
-                    class="flex flex-wrap gap-2 mt-4"
-                  ></div>
+                  <div class="flex flex-wrap gap-2 mt-4"></div>
                 </div>
 
                 <div>
-                  <button
-                    onclick="imprimirFicha()"
-                    class="btn btn-secondary"
-                  >
-                    Imprimir PDF
-                  </button>
+                  <button onclick="imprimirFicha()" class="btn btn-secondary">Imprimir PDF</button>
                 </div>
               </div>
             </div>
@@ -943,85 +813,39 @@
           <!-- INFORMACIÓN -->
           <!-- ========================= -->
 
-          <section
-            class="panel"
-          >
-            <div
-              class="panel-header"
-            >
-              <h3
-                class="font-extrabold text-[14px]"
-              >
-                Información del
-                Predio
-              </h3>
+          <section class="panel">
+            <div class="panel-header">
+              <h3 class="font-extrabold text-[14px]">Información del Predio</h3>
             </div>
 
-            <div
-              class="panel-body"
-            >
-              <div
-                class="info-grid"
-              >
+            <div class="panel-body">
+              <div class="info-grid">
                 <div>
-                  <div
-                    class="text-[11px] font-bold text-slate-500 uppercase"
-                  >
-                    Dirección
-                  </div>
+                  <div class="text-[11px] font-bold text-slate-500 uppercase">Dirección</div>
 
-                  <div
-                    id="direccionText"
-                    class="mt-2 font-semibold"
-                  ></div>
+                  <div id="direccionText" class="mt-2 font-semibold"></div>
                 </div>
 
                 <div>
-                  <div
-                    class="text-[11px] font-bold text-slate-500 uppercase"
-                  >
-                    Cédula / RUC
-                  </div>
+                  <div class="text-[11px] font-bold text-slate-500 uppercase">Cédula / RUC</div>
 
-                  <div
-                    id="cedulaText"
-                    class="mt-2 font-semibold"
-                  ></div>
+                  <div id="cedulaText" class="mt-2 font-semibold"></div>
                 </div>
 
                 <div>
-                  <div
-                    class="text-[11px] font-bold text-slate-500 uppercase"
-                  >
-                    Medidor
-                  </div>
+                  <div class="text-[11px] font-bold text-slate-500 uppercase">Medidor</div>
 
-                  <div
-                    id="medidorText"
-                    class="mt-2 font-semibold"
-                  ></div>
+                  <div id="medidorText" class="mt-2 font-semibold"></div>
                 </div>
 
                 <div>
-                  <div
-                    class="text-[11px] font-bold text-slate-500 uppercase"
-                  >
-                    Coordenadas
-                  </div>
+                  <div class="text-[11px] font-bold text-slate-500 uppercase">Coordenadas</div>
 
-                  <div
-                    id="coords"
-                    class="mt-2 font-semibold"
-                  ></div>
+                  <div id="coords" class="mt-2 font-semibold"></div>
                 </div>
               </div>
 
-              <div
-                class="map-box mt-8"
-              >
-                Visualizador
-                Geográfico
-              </div>
+              <div class="map-box mt-8">Visualizador Geográfico</div>
             </div>
           </section>
 
@@ -1029,37 +853,17 @@
           <!-- OPERACIONES -->
           <!-- ========================= -->
 
-          <section
-            class="panel"
-          >
-            <div
-              class="panel-header"
-            >
+          <section class="panel">
+            <div class="panel-header">
               <div>
-                <h3
-                  class="font-extrabold text-[14px]"
-                >
-                  Operaciones
-                </h3>
+                <h3 class="font-extrabold text-[14px]">Operaciones</h3>
 
-                <p
-                  class="text-[11px] text-slate-500 mt-1"
-                >
-                  Acciones
-                  disponibles
-                  según estado
-                  del servicio
-                </p>
+                <p class="text-[11px] text-slate-500 mt-1">Acciones disponibles según estado del servicio</p>
               </div>
             </div>
 
-            <div
-              class="panel-body"
-            >
-              <div
-                class="action-grid"
-                id="accionesContainer"
-              ></div>
+            <div class="panel-body">
+              <div class="action-grid" id="accionesContainer"></div>
             </div>
           </section>
         </div>
@@ -1070,54 +874,21 @@
     <!-- DRAWER -->
     <!-- ========================= -->
 
-    <div
-      id="drawerOverlay"
-      class="drawer-overlay"
-      onclick="cerrarDrawer()"
-    ></div>
+    <div id="drawerOverlay" class="drawer-overlay" onclick="cerrarDrawer()"></div>
 
-    <aside
-      id="drawer"
-      class="drawer"
-    >
-      <div
-        class="drawer-header"
-      >
-        <h2
-          id="drawerTitle"
-          class="text-[22px] font-black"
-        >
-          Operación
-        </h2>
+    <aside id="drawer" class="drawer">
+      <div class="drawer-header">
+        <h2 id="drawerTitle" class="text-[22px] font-black">Operación</h2>
 
-        <button
-          onclick="cerrarDrawer()"
-          class="text-2xl"
-        >
-          ✕
-        </button>
+        <button onclick="cerrarDrawer()" class="text-2xl">✕</button>
       </div>
 
-      <div
-        class="drawer-body"
-      ></div>
+      <div class="drawer-body"></div>
 
-      <div
-        class="drawer-footer"
-      >
-        <button
-          onclick="cerrarDrawer()"
-          class="btn btn-secondary w-full"
-        >
-          Cancelar
-        </button>
+      <div class="drawer-footer">
+        <button onclick="cerrarDrawer()" class="btn btn-secondary w-full">Cancelar</button>
 
-        <button
-          onclick="guardarOperacion()"
-          class="btn btn-primary w-full"
-        >
-          Guardar
-        </button>
+        <button onclick="guardarOperacion()" class="btn btn-primary w-full">Guardar</button>
       </div>
     </aside>
 
@@ -1125,230 +896,129 @@
     <!-- TOAST -->
     <!-- ========================= -->
 
-    <div
-      id="toast"
-      class="toast"
-    ></div>
+    <div id="toast" class="toast"></div>
 
     <!-- ========================= -->
     <!-- SCRIPT -->
     <!-- ========================= -->
 
     <script>
-      const predios =
-        [
-          {
-            id: 'PRE-0001',
+      const predios = [
+        {
+          id: 'PRE-0001',
 
-            nombre:
-              'COMERCIAL LOS ANDES',
+          nombre: 'COMERCIAL LOS ANDES',
 
-            cedula:
-              '0791784556001',
+          cedula: '0791784556001',
 
-            direccion:
-              'Av. Hualtaco y Arenillas',
+          direccion: 'Av. Hualtaco y Arenillas',
 
-            categoria:
-              'Comercial',
+          categoria: 'Comercial',
 
-            tarifa:
-              'consumo',
+          tarifa: 'consumo',
 
-            medidor:
-              'AH-004518',
+          medidor: 'AH-004518',
 
-            estado:
-              'activo',
+          estado: 'activo',
 
-            incidente:
-              null,
+          incidente: null,
 
-            gps:
-              '-3.4810, -80.2309',
-          },
+          gps: '-3.4810, -80.2309',
+        },
 
-          {
-            id: 'PRE-0002',
+        {
+          id: 'PRE-0002',
 
-            nombre:
-              'ROSA CÓRDOVA PINEDA',
+          nombre: 'ROSA CÓRDOVA PINEDA',
 
-            cedula:
-              '0702381199',
+          cedula: '0702381199',
 
-            direccion:
-              'Barrio 9 de Octubre',
+          direccion: 'Barrio 9 de Octubre',
 
-            categoria:
-              'Doméstico',
+          categoria: 'Doméstico',
 
-            tarifa:
-              'base',
+          tarifa: 'base',
 
-            medidor:
-              'SIN MEDIDOR',
+          medidor: 'SIN MEDIDOR',
 
-            estado:
-              'suspendido',
+          estado: 'suspendido',
 
-            incidente:
-              'fuga',
+          incidente: 'fuga',
 
-            gps:
-              '-3.4801, -80.2315',
-          },
+          gps: '-3.4801, -80.2315',
+        },
 
-          {
-            id: 'PRE-0003',
+        {
+          id: 'PRE-0003',
 
-            nombre:
-              'HOTEL FRONTERA AZUL',
+          nombre: 'HOTEL FRONTERA AZUL',
 
-            cedula:
-              '0790011223001',
+          cedula: '0790011223001',
 
-            direccion:
-              'Av. República 1210',
+          direccion: 'Av. República 1210',
 
-            categoria:
-              'Comercial',
+          categoria: 'Comercial',
 
-            tarifa:
-              'consumo',
+          tarifa: 'consumo',
 
-            medidor:
-              'AH-006789',
+          medidor: 'AH-006789',
 
-            estado:
-              'activo',
+          estado: 'activo',
 
-            incidente:
-              null,
+          incidente: null,
 
-            gps:
-              '-3.4822, -80.2320',
-          },
-        ];
+          gps: '-3.4822, -80.2320',
+        },
+      ];
 
-      let filtroActual =
-        'todos';
+      let filtroActual = 'todos';
 
-      let predioSeleccionado =
-        predios[0];
+      let predioSeleccionado = predios[0];
 
       function actualizarHora() {
-        const hora =
-          new Date().toLocaleTimeString(
-            'es-EC',
-            {
-              hour:
-                '2-digit',
+        const hora = new Date().toLocaleTimeString('es-EC', {
+          hour: '2-digit',
 
-              minute:
-                '2-digit',
-            }
-          );
+          minute: '2-digit',
+        });
 
-        document.getElementById(
-          'horaActual'
-        ).textContent =
-          hora;
+        document.getElementById('horaActual').textContent = hora;
       }
 
-      setInterval(
-        actualizarHora,
-        1000
-      );
+      setInterval(actualizarHora, 1000);
 
       actualizarHora();
 
       function renderPredios() {
-        const container =
-          document.getElementById(
-            'prediosContainer'
-          );
+        const container = document.getElementById('prediosContainer');
 
-        const busqueda =
-          document
-            .getElementById(
-              'searchInput'
-            )
-            .value.toLowerCase();
+        const busqueda = document.getElementById('searchInput').value.toLowerCase();
 
-        const resultado =
-          predios.filter(
-            (predio) => {
-              const coincideTexto =
-                predio.nombre
-                  .toLowerCase()
-                  .includes(
-                    busqueda
-                  ) ||
-                predio.cedula.includes(
-                  busqueda
-                ) ||
-                predio.id
-                  .toLowerCase()
-                  .includes(
-                    busqueda
-                  ) ||
-                predio.medidor
-                  .toLowerCase()
-                  .includes(
-                    busqueda
-                  );
+        const resultado = predios.filter((predio) => {
+          const coincideTexto = predio.nombre.toLowerCase().includes(busqueda) || predio.cedula.includes(busqueda) || predio.id.toLowerCase().includes(busqueda) || predio.medidor.toLowerCase().includes(busqueda);
 
-              let coincideFiltro =
-                true;
+          let coincideFiltro = true;
 
-              if (
-                filtroActual ===
-                'activos'
-              ) {
-                coincideFiltro =
-                  predio.estado ===
-                  'activo';
-              }
+          if (filtroActual === 'activos') {
+            coincideFiltro = predio.estado === 'activo';
+          }
 
-              if (
-                filtroActual ===
-                'suspendidos'
-              ) {
-                coincideFiltro =
-                  predio.estado ===
-                  'suspendido';
-              }
+          if (filtroActual === 'suspendidos') {
+            coincideFiltro = predio.estado === 'suspendido';
+          }
 
-              if (
-                filtroActual ===
-                'fugas'
-              ) {
-                coincideFiltro =
-                  predio.incidente ===
-                  'fuga';
-              }
+          if (filtroActual === 'fugas') {
+            coincideFiltro = predio.incidente === 'fuga';
+          }
 
-              return (
-                coincideTexto &&
-                coincideFiltro
-              );
-            }
-          );
+          return coincideTexto && coincideFiltro;
+        });
 
-        container.innerHTML =
-          resultado
-            .map(
-              (
-                predio
-              ) => `
+        container.innerHTML = resultado
+          .map(
+            (predio) => `
             <div
-              class="predio-card ${
-                predioSeleccionado.id ===
-                predio.id
-                  ? 'active'
-                  : ''
-              }"
+              class="predio-card ${predioSeleccionado.id === predio.id ? 'active' : ''}"
 
               onclick="seleccionarPredio('${predio.id}')"
             >
@@ -1370,8 +1040,7 @@
 
               <div class="flex flex-wrap gap-2 mt-4">
                 ${
-                  predio.estado ===
-                  'activo'
+                  predio.estado === 'activo'
                     ? `
                   <span class="badge badge-success">
                     Activo
@@ -1385,8 +1054,7 @@
                 }
 
                 ${
-                  predio.incidente ===
-                  'fuga'
+                  predio.incidente === 'fuga'
                     ? `
                   <span class="badge badge-warning">
                     Fuga
@@ -1396,19 +1064,13 @@
                 }
               </div>
             </div>
-          `
-            )
-            .join('');
+          `,
+          )
+          .join('');
       }
 
-      function seleccionarPredio(
-        id
-      ) {
-        predioSeleccionado =
-          predios.find(
-            (p) =>
-              p.id === id
-          );
+      function seleccionarPredio(id) {
+        predioSeleccionado = predios.find((p) => p.id === id);
 
         renderPredios();
 
@@ -1416,36 +1078,19 @@
       }
 
       function renderDetalle() {
-        const p =
-          predioSeleccionado;
+        const p = predioSeleccionado;
 
-        document.getElementById(
-          'predioNombre'
-        ).textContent =
-          p.nombre;
+        document.getElementById('predioNombre').textContent = p.nombre;
 
-        document.getElementById(
-          'direccionText'
-        ).textContent =
-          p.direccion;
+        document.getElementById('direccionText').textContent = p.direccion;
 
-        document.getElementById(
-          'cedulaText'
-        ).textContent =
-          p.cedula;
+        document.getElementById('cedulaText').textContent = p.cedula;
 
-        document.getElementById(
-          'medidorText'
-        ).textContent =
-          p.medidor;
+        document.getElementById('medidorText').textContent = p.medidor;
 
-        document.getElementById(
-          'coords'
-        ).textContent =
-          p.gps;
+        document.getElementById('coords').textContent = p.gps;
 
-        const badges =
-          [];
+        const badges = [];
 
         badges.push(`
           <span class="badge badge-neutral">
@@ -1455,19 +1100,11 @@
 
         badges.push(`
           <span class="badge badge-neutral">
-            ${
-              p.tarifa ===
-              'consumo'
-                ? 'Por Consumo'
-                : 'Base'
-            }
+            ${p.tarifa === 'consumo' ? 'Por Consumo' : 'Base'}
           </span>
         `);
 
-        if (
-          p.estado ===
-          'activo'
-        ) {
+        if (p.estado === 'activo') {
           badges.push(`
             <span class="badge badge-success">
               Activo
@@ -1481,10 +1118,7 @@
           `);
         }
 
-        if (
-          p.incidente ===
-          'fuga'
-        ) {
+        if (p.incidente === 'fuga') {
           badges.push(`
             <span class="badge badge-warning">
               Fuga Detectada
@@ -1492,198 +1126,147 @@
           `);
         }
 
-        document.querySelector(
-          '#predioNombre + div'
-        ).innerHTML =
-          badges.join('');
+        document.querySelector('#predioNombre + div').innerHTML = badges.join('');
 
         renderOperaciones();
       }
 
       function renderOperaciones() {
-        const container =
-          document.getElementById(
-            'accionesContainer'
-          );
+        const container = document.getElementById('accionesContainer');
 
-        const p =
-          predioSeleccionado;
+        const p = predioSeleccionado;
 
-        const acciones =
-          [];
+        const acciones = [];
 
-        if (
-          p.estado ===
-          'activo'
-        ) {
-          acciones.push(
-            {
-              id: 'suspension',
-
-              icono:
-                '⛔',
-
-              titulo:
-                'Suspender Servicio',
-
-              subtitulo:
-                'Bloqueo operativo',
-            }
-          );
+        if (p.estado === 'activo') {
+          acciones.push({
+            id: 'suspension',
+            icono: `
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M8 12h8"></path>
+        </svg>
+      `,
+            titulo: 'Suspender Servicio',
+            subtitulo: 'Bloqueo operativo del suministro',
+          });
         }
 
-        if (
-          p.estado ===
-          'suspendido'
-        ) {
-          acciones.push(
-            {
-              id: 'reconexion',
-
-              icono:
-                '🔄',
-
-              titulo:
-                'Reconectar Servicio',
-
-              subtitulo:
-                'Restablecer suministro',
-            }
-          );
+        if (p.estado === 'suspendido') {
+          acciones.push({
+            id: 'reconexion',
+            icono: `
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M21 12a9 9 0 1 1-3-6.7"></path>
+          <path d="M21 3v6h-6"></path>
+        </svg>
+      `,
+            titulo: 'Reconectar Servicio',
+            subtitulo: 'Restablecimiento del servicio',
+          });
         }
 
         acciones.push(
           {
             id: 'inspeccion',
-
-            icono:
-              '📍',
-
-            titulo:
-              'Inspección',
-
-            subtitulo:
-              'Verificación en campo',
+            icono: `
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M3 12h18"></path>
+          <path d="M12 3v18"></path>
+        </svg>
+      `,
+            titulo: 'Inspección',
+            subtitulo: 'Verificación técnica en campo',
           },
 
           {
             id: 'medidor',
-
-            icono:
-              '📟',
-
-            titulo:
-              'Cambio de Medidor',
-
-            subtitulo:
-              'Actualización técnica',
+            icono: `
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="5" y="3" width="14" height="18" rx="2"></rect>
+          <path d="M9 8h6"></path>
+          <path d="M9 12h6"></path>
+        </svg>
+      `,
+            titulo: 'Cambio de Medidor',
+            subtitulo: 'Actualización del dispositivo',
           },
 
           {
             id: 'fuga',
-
-            icono:
-              '💧',
-
-            titulo:
-              'Reportar Fuga',
-
-            subtitulo:
-              'Enviar mantenimiento',
+            icono: `
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M12 3s5 5.5 5 10a5 5 0 0 1-10 0c0-4.5 5-10 5-10z"></path>
+        </svg>
+      `,
+            titulo: 'Reportar Fuga',
+            subtitulo: 'Generar aviso de mantenimiento',
           },
 
           {
             id: 'orden',
-
-            icono:
-              '🔧',
-
-            titulo:
-              'Orden Técnica',
-
-            subtitulo:
-              'Mantenimiento o reparación',
-          }
+            icono: `
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M14 3h7v7"></path>
+          <path d="M21 3l-9 9"></path>
+          <path d="M5 12v7h7"></path>
+        </svg>
+      `,
+            titulo: 'Orden Técnica',
+            subtitulo: 'Mantenimiento o reparación',
+          },
         );
 
-        container.innerHTML =
-          acciones
-            .map(
-              (
-                accion
-              ) => `
-            <button
-              class="action-btn"
-              onclick="abrirDrawer('${accion.id}')"
-            >
-              <div class="text-[24px]">
-                ${accion.icono}
-              </div>
+        container.innerHTML = acciones
+          .map(
+            (accion) => `
+        <button
+          class="action-btn"
+          onclick="abrirDrawer('${accion.id}')"
+        >
+          <div class="action-icon">
+            ${accion.icono}
+          </div>
 
-              <div class="mt-3 text-[13px] font-black">
-                ${accion.titulo}
-              </div>
+          <div class="action-content">
+            <div class="action-title">
+              ${accion.titulo}
+            </div>
 
-              <div class="text-[11px] text-slate-500 mt-1">
-                ${accion.subtitulo}
-              </div>
-            </button>
-          `
-            )
-            .join('');
+            <div class="action-subtitle">
+              ${accion.subtitulo}
+            </div>
+          </div>
+        </button>
+      `,
+          )
+          .join('');
       }
 
-      function abrirDrawer(
-        tipo
-      ) {
-        document
-          .getElementById(
-            'drawer'
-          )
-          .classList.add(
-            'open'
-          );
+      function abrirDrawer(tipo) {
+        document.getElementById('drawer').classList.add('open');
 
-        document
-          .getElementById(
-            'drawerOverlay'
-          )
-          .classList.add(
-            'open'
-          );
+        document.getElementById('drawerOverlay').classList.add('open');
 
-        const titulos =
-          {
-            suspension:
-              'Suspensión de Servicio',
+        const titulos = {
+          suspension: 'Suspensión de Servicio',
 
-            reconexion:
-              'Reconexión de Servicio',
+          reconexion: 'Reconexión de Servicio',
 
-            inspeccion:
-              'Inspección',
+          inspeccion: 'Inspección',
 
-            medidor:
-              'Cambio de Medidor',
+          medidor: 'Cambio de Medidor',
 
-            fuga:
-              'Reporte de Fuga',
+          fuga: 'Reporte de Fuga',
 
-            orden:
-              'Orden Técnica',
-          };
+          orden: 'Orden Técnica',
+        };
 
-        document.getElementById(
-          'drawerTitle'
-        ).textContent =
-          titulos[tipo];
+        document.getElementById('drawerTitle').textContent = titulos[tipo];
 
         let extra = '';
 
-        if (
-          tipo ===
-          'orden'
-        ) {
+        if (tipo === 'orden') {
           extra = `
             <div>
               <label class="text-[12px] font-bold text-slate-600">
@@ -1711,9 +1294,7 @@
           `;
         }
 
-        document.querySelector(
-          '.drawer-body'
-        ).innerHTML = `
+        document.querySelector('.drawer-body').innerHTML = `
           <div class="space-y-6">
 
             <div>
@@ -1768,27 +1349,13 @@
       }
 
       function cerrarDrawer() {
-        document
-          .getElementById(
-            'drawer'
-          )
-          .classList.remove(
-            'open'
-          );
+        document.getElementById('drawer').classList.remove('open');
 
-        document
-          .getElementById(
-            'drawerOverlay'
-          )
-          .classList.remove(
-            'open'
-          );
+        document.getElementById('drawerOverlay').classList.remove('open');
       }
 
       function guardarOperacion() {
-        mostrarToast(
-          'Operación registrada correctamente'
-        );
+        mostrarToast('Operación registrada correctamente');
 
         cerrarDrawer();
       }
@@ -1797,97 +1364,43 @@
         window.print();
       }
 
-      function mostrarToast(
-        mensaje
-      ) {
-        const toast =
-          document.getElementById(
-            'toast'
-          );
+      function mostrarToast(mensaje) {
+        const toast = document.getElementById('toast');
 
-        toast.textContent =
-          mensaje;
+        toast.textContent = mensaje;
 
-        toast.classList.add(
-          'show'
-        );
+        toast.classList.add('show');
 
-        clearTimeout(
-          window.toastTimer
-        );
+        clearTimeout(window.toastTimer);
 
-        window.toastTimer =
-          setTimeout(() => {
-            toast.classList.remove(
-              'show'
-            );
-          }, 2500);
+        window.toastTimer = setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2500);
       }
 
-      document
-        .querySelectorAll(
-          '.chip'
-        )
-        .forEach((chip) => {
-          chip.addEventListener(
-            'click',
-            function () {
-              document
-                .querySelectorAll(
-                  '.chip'
-                )
-                .forEach((c) =>
-                  c.classList.remove(
-                    'active'
-                  )
-                );
+      document.querySelectorAll('.chip').forEach((chip) => {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.chip').forEach((c) => c.classList.remove('active'));
 
-              this.classList.add(
-                'active'
-              );
+          this.classList.add('active');
 
-              const texto =
-                this.innerText.toLowerCase();
+          const texto = this.innerText.toLowerCase();
 
-              if (
-                texto.includes(
-                  'activo'
-                )
-              ) {
-                filtroActual =
-                  'activos';
-              } else if (
-                texto.includes(
-                  'suspendido'
-                )
-              ) {
-                filtroActual =
-                  'suspendidos';
-              } else if (
-                texto.includes(
-                  'fuga'
-                )
-              ) {
-                filtroActual =
-                  'fugas';
-              } else {
-                filtroActual =
-                  'todos';
-              }
+          if (texto.includes('activo')) {
+            filtroActual = 'activos';
+          } else if (texto.includes('suspendido')) {
+            filtroActual = 'suspendidos';
+          } else if (texto.includes('fuga')) {
+            filtroActual = 'fugas';
+          } else {
+            filtroActual = 'todos';
+          }
 
-              renderPredios();
-            }
-          );
+          renderPredios();
         });
+      });
 
-      document
-        .getElementById(
-          'searchInput'
-        )
-        .addEventListener(
-          'input',
-          renderPredios
-        );
+      document.getElementById('searchInput').addEventListener('input', renderPredios);
 
       renderPredios();
 
