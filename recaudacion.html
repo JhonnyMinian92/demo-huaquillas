@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Caja POS - Aguas Huaquillas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 min-h-screen font-sans flex flex-col overflow-y-auto">
+    <header class="bg-gradient-to-r from-blue-900 to-blue-800 shadow-md p-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="text-3xl">💧</div>
+        <div>
+          <h1 class="text-lg font-bold text-white">AGUAS HUAQUILLAS</h1>
+          <p class="text-xs text-blue-100">Sistema de Recaudación</p>
+        </div>
+      </div>
+      <div class="text-right">
+        <p class="text-sm font-semibold text-white">Johanna Díaz: <span id="nombreCajera">Cajera 01</span></p>
+        <p class="text-xs text-blue-100">Sesión Abierta - <span id="horaActual">--:--</span></p>
+      </div>
+    </header>
+
+    <main class="flex-1 flex items-start overflow-visible">
+      <section class="w-[65%] p-6 flex flex-col gap-4 overflow-y-auto bg-gray-50">
+        <!-- Buscador Corporativo -->
+        <div class="relative">
+          <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.6-5.4a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+
+          <input type="text" id="buscarCliente" placeholder="Buscar por cédula, RUC o nombres..." autocomplete="off" class="w-full h-14 pl-12 pr-4 rounded-xl border border-gray-300 bg-white shadow-sm text-gray-800 text-sm tracking-wide focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-900 transition-all duration-200" oninput="buscarClienteFunc()" />
+
+          <!-- Resultados -->
+          <div id="resultadoBusqueda" class="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-2xl hidden overflow-hidden"></div>
+        </div>
+
+        <div class="bg-white p-5 rounded-lg shadow border border-gray-200">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h2 class="text-2xl font-bold text-gray-800" id="nombreCliente">JUAN PÉREZ MENDOZA</h2>
+              <p class="text-sm text-gray-600 mt-1" id="documentoCliente">C.I: 0706323193</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2 mt-3" id="etiquetasCliente">
+            <span class="px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full">📊 Medidor: Doméstico</span>
+            <span class="px-3 py-1 text-xs font-semibold bg-gray-100 text-gray-700 rounded-full">✓ Usuario Particular</span>
+            <span class="px-3 py-1 text-xs font-semibold bg-amber-100 text-amber-800 rounded-full">👴 Tercera Edad</span>
+          </div>
+        </div>
+
+        <!-- Facturas Pendientes -->
+        <div id="listaFacturas" class="space-y-3">
+          <!-- Las facturas se cargan aquí con JavaScript -->
+        </div>
+      </section>
+
+      <section class="w-[35%] bg-gray-100 border-l border-gray-300 p-6 flex flex-col gap-3 overflow-visible">
+        <!-- Total Pendiente -->
+        <div class="bg-white p-4 rounded-lg shadow border border-gray-200">
+          <div class="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Total Pendiente</div>
+          <div class="text-3xl font-black text-blue-900" id="totalPendiente">$0.00</div>
+          <div class="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200">
+            <span id="detalleFacturas">—</span>
+          </div>
+        </div>
+
+        <!-- Campo de Efectivo -->
+        <div class="bg-white p-4 rounded-lg shadow border border-gray-200">
+          <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">💵 Efectivo Recibido</label>
+          <div class="flex gap-2 items-end">
+            <div class="flex-1">
+              <input type="number" id="efectivoRecibido" placeholder="0.00" min="0" step="0.01" class="w-full text-2xl font-bold p-3 border-2 border-gray-300 rounded-lg text-right focus:ring-2 focus:ring-blue-100 focus:border-blue-900 outline-none" onkeypress="if (event.key === 'Enter') procesarCobro();" />
+            </div>
+            <span class="text-gray-700 font-bold">USD</span>
+          </div>
+        </div>
+
+        <!-- Resultado del Pago -->
+        <div id="resultadoPago" class="bg-emerald-50 p-4 rounded-lg shadow border-2 border-emerald-200 hidden">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-xl">✓</span>
+            <div class="text-xs font-bold text-emerald-900 uppercase tracking-wide">Pago Registrado</div>
+          </div>
+          <div id="textResultado" class="text-xs text-emerald-900 space-y-1.5"></div>
+        </div>
+
+        <!-- Botón Cobrar -->
+        <button onclick="procesarCobro()" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 rounded-lg shadow transition-colors uppercase text-sm tracking-wide">💰 Procesar Cobro</button>
+
+        <!-- Historial de Transacciones -->
+        <div class="bg-white p-4 rounded-lg shadow border border-gray-200 flex-1 flex flex-col">
+          <h4 class="text-xs font-bold text-gray-700 mb-3 pb-2 border-b border-gray-200 uppercase tracking-wide">📋 Últimas Transacciones</h4>
+          <div id="historialTransacciones" class="flex-1 space-y-2">
+            <div class="text-xs text-gray-500 text-center py-4">Sin transacciones registradas</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      // Base de datos de clientes
+      const baseClientes = {
+        '0706323193': {
+          nombre: 'JUAN PÉREZ MENDOZA',
+          documento: 'C.I: 0706323193',
+          tipo: 'particular',
+          medidor: 'Doméstico',
+          conMedidor: true,
+          tieneDescuentoTercedadEdad: true,
+          institucionPublica: false,
+          isTanquero: false,
+          facturas: [
+            { mes: 'Enero 2026', conMedidor: true, consumo: 18, tarifaFija: 0, multa: 2.5, abonoMulta: 2.5, abonoFactura: 2.5 },
+            { mes: 'Febrero 2026', conMedidor: true, consumo: 16, tarifaFija: 0, multa: 2.5, abonoMulta: 0, abonoFactura: 0 },
+            { mes: 'Marzo 2026', conMedidor: true, consumo: 15, tarifaFija: 0, multa: 0, abonoMulta: 0, abonoFactura: 0 },
+          ],
+        },
+        '0760000690001': {
+          nombre: 'ILUSTRE MUNICIPIO DE HUAQUILLAS',
+          documento: 'RUC: 0760000690001',
+          tipo: 'oficial',
+          medidor: 'Oficial',
+          conMedidor: true,
+          tieneDescuentoTercedadEdad: false,
+          institucionPublica: true,
+          isTanquero: false,
+          facturas: [{ mes: 'Marzo 2026', conMedidor: true, consumo: 250, tarifaFija: 0, multa: 0, abonoMulta: 0, abonoFactura: 0, extras: [{ concepto: 'Instalación de Servicio', monto: 15.0 }] }],
+        },
+        '0706323201': {
+          nombre: 'COMERCIAL LOS ANDES S.A.',
+          documento: 'C.I: 0706323201',
+          tipo: 'comercial',
+          medidor: 'Comercial',
+          conMedidor: true,
+          tieneDescuentoTercedadEdad: false,
+          institucionPublica: false,
+          isTanquero: false,
+          facturas: [{ mes: 'Marzo 2026', conMedidor: true, consumo: 85, tarifaFija: 0, multa: 0, abonoMulta: 0, abonoFactura: 0, extras: [{ concepto: 'Reconexión de Servicio', monto: 25.0 }] }],
+        },
+        '0706323194001': {
+          nombre: 'JUAN CARLOS TANQUERO LÓPEZ',
+          documento: 'C.I: 0706323194001',
+          tipo: 'tanquero',
+          medidor: 'Tanquero',
+          conMedidor: true,
+          tieneDescuentoTercedadEdad: false,
+          institucionPublica: false,
+          isTanquero: true,
+          facturas: [{ mes: 'Marzo 2026', conMedidor: true, consumo: 500, tarifaFija: 0, multa: 0, abonoMulta: 0, abonoFactura: 0 }],
+        },
+      };
+
+      let clienteActual = null;
+
+      const DESCUENTO_TERCERA_EDAD = 0.5;
+      const PRECIO_POR_M3 = 0.65;
+      const TARIFA_FIJA = 8.5;
+      const PRECIO_TANQUERO_M3 = 0.35;
+
+      let historialTransacciones = [];
+
+      // Actualizar reloj
+      function actualizarReloj() {
+        const ahora = new Date();
+        const horas = String(ahora.getHours()).padStart(2, '0');
+        const minutos = String(ahora.getMinutes()).padStart(2, '0');
+        document.getElementById('horaActual').textContent = `${horas}:${minutos}`;
+      }
+      setInterval(actualizarReloj, 1000);
+      actualizarReloj();
+
+      // Buscar cliente
+      function buscarClienteFunc() {
+        const busqueda = document.getElementById('buscarCliente').value.trim().toUpperCase();
+
+        const resultadoBusqueda = document.getElementById('resultadoBusqueda');
+
+        if (!busqueda) {
+          resultadoBusqueda.classList.add('hidden');
+          return;
+        }
+
+        const clientesEncontrados = Object.entries(baseClientes)
+          .filter(([key, cliente]) => {
+            return key.includes(busqueda) || cliente.documento.toUpperCase().includes(busqueda) || cliente.nombre.toUpperCase().includes(busqueda);
+          })
+          .slice(0, 8);
+
+        if (clientesEncontrados.length === 0) {
+          resultadoBusqueda.innerHTML = `
+      <div class="p-4 text-sm text-gray-500">
+        No se encontraron clientes
+      </div>
+    `;
+          resultadoBusqueda.classList.remove('hidden');
+          return;
+        }
+
+        resultadoBusqueda.innerHTML = clientesEncontrados
+          .map(
+            ([key, cliente]) => `
+      <button
+        onclick="seleccionarCliente('${key}')"
+        class="w-full text-left px-4 py-3 hover:bg-blue-50 border-b border-gray-100 transition-all"
+      >
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="font-semibold text-gray-800 text-sm">
+              ${cliente.nombre}
+            </div>
+
+            <div class="text-xs text-gray-500 mt-1">
+              ${cliente.documento}
+            </div>
+          </div>
+
+          <div>
+            ${cliente.institucionPublica ? `<span class="text-[11px] px-2 py-1 rounded-full bg-purple-100 text-purple-700 font-semibold">PÚBLICO</span>` : cliente.isTanquero ? `<span class="text-[11px] px-2 py-1 rounded-full bg-cyan-100 text-cyan-700 font-semibold">TANQUERO</span>` : `<span class="text-[11px] px-2 py-1 rounded-full bg-gray-100 text-gray-700 font-semibold">CLIENTE</span>`}
+          </div>
+        </div>
+      </button>
+    `,
+          )
+          .join('');
+
+        resultadoBusqueda.classList.remove('hidden');
+      }
+
+      function seleccionarCliente(key) {
+        const cliente = baseClientes[key];
+
+        if (!cliente) {
+          limpiarCliente();
+          return;
+        }
+
+        cargarCliente(cliente);
+
+        document.getElementById('buscarCliente').value = cliente.nombre;
+
+        document.getElementById('resultadoBusqueda').classList.add('hidden');
+      }
+
+      document.addEventListener('click', function (e) {
+        const buscador = document.getElementById('buscarCliente');
+        const resultados = document.getElementById('resultadoBusqueda');
+
+        if (!buscador.contains(e.target) && !resultados.contains(e.target)) {
+          resultados.classList.add('hidden');
+        }
+      });
+
+      // Cargar cliente
+      function cargarCliente(cliente) {
+        clienteActual = cliente;
+        normalizarAbonosPorAntiguedad(cliente);
+
+        document.getElementById('nombreCliente').textContent = cliente.nombre;
+        document.getElementById('documentoCliente').textContent = cliente.documento;
+
+        // Generar etiquetas
+        let etiquetas = `<span class="px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full">📊 Medidor: ${cliente.medidor}</span>`;
+
+        if (cliente.institucionPublica) {
+          etiquetas += `<span class="px-3 py-1 text-xs font-semibold bg-purple-100 text-purple-800 rounded-full">🏛️ Institución Pública</span>`;
+        } else if (cliente.isTanquero) {
+          etiquetas += `<span class="px-3 py-1 text-xs font-semibold bg-cyan-100 text-cyan-800 rounded-full">🚛 Distribuidor de Agua</span>`;
+        } else {
+          etiquetas += `<span class="px-3 py-1 text-xs font-semibold bg-gray-100 text-gray-700 rounded-full">✓ Usuario Particular</span>`;
+        }
+
+        if (cliente.tieneDescuentoTercedadEdad) {
+          etiquetas += `<span class="px-3 py-1 text-xs font-semibold bg-amber-100 text-amber-800 rounded-full">👴 Tercera Edad (50%)</span>`;
+        }
+
+        document.getElementById('etiquetasCliente').innerHTML = etiquetas;
+
+        renderizarFacturas();
+        actualizarPanelCobro();
+      }
+
+      // Limpiar cliente
+      function limpiarCliente() {
+        clienteActual = null;
+        document.getElementById('nombreCliente').textContent = 'CLIENTE NO ENCONTRADO';
+        document.getElementById('documentoCliente').textContent = 'Ingrese cédula o RUC válido';
+        document.getElementById('etiquetasCliente').innerHTML = '';
+        document.getElementById('listaFacturas').innerHTML = '';
+        document.getElementById('totalPendiente').textContent = '$0.00';
+        document.getElementById('detalleFacturas').textContent = '—';
+      }
+
+      // Calcular monto base de factura
+      function calcularSubtotalConsumo(f) {
+        if (!clienteActual) return 0;
+
+        if (clienteActual.isTanquero) {
+          return f.consumo * PRECIO_TANQUERO_M3;
+        }
+
+        if (f.conMedidor) {
+          return f.consumo * PRECIO_POR_M3;
+        }
+
+        return f.tarifaFija;
+      }
+
+      function calcularDescuentoTerceraEdad(f) {
+        if (!clienteActual || !clienteActual.tieneDescuentoTercedadEdad) return 0;
+
+        return calcularSubtotalConsumo(f) * DESCUENTO_TERCERA_EDAD;
+      }
+
+      function calcularMontoBase(f) {
+        if (!clienteActual) return 0;
+
+        const subtotal = calcularSubtotalConsumo(f);
+
+        // Extras
+        let extras = 0;
+
+        if (f.extras) {
+          extras = f.extras.reduce((sum, e) => sum + e.monto, 0);
+        }
+
+        // Descuento tercera edad SOLO sobre consumo/tarifa
+        const descuento = calcularDescuentoTerceraEdad(f);
+
+        return subtotal - descuento + extras;
+      }
+
+      function normalizarAbonosPorAntiguedad(cliente) {
+        if (!cliente || !Array.isArray(cliente.facturas)) return;
+
+        let totalAbonado = cliente.facturas.reduce((sum, f) => sum + (f.abonoMulta || 0) + (f.abonoFactura || 0), 0);
+
+        cliente.facturas.forEach((f) => {
+          f.abonoMulta = 0;
+          f.abonoFactura = 0;
+        });
+
+        for (let i = 0; i < cliente.facturas.length && totalAbonado > 0; i++) {
+          const factura = cliente.facturas[i];
+          const pagoMulta = Math.min(totalAbonado, factura.multa || 0);
+
+          factura.abonoMulta = pagoMulta;
+          totalAbonado -= pagoMulta;
+
+          if (totalAbonado <= 0) break;
+
+          const pagoFactura = Math.min(totalAbonado, calcularMontoBase(factura));
+
+          factura.abonoFactura = pagoFactura;
+          totalAbonado -= pagoFactura;
+        }
+      }
+
+      // Obtener saldo de multa pendiente
+      function calcularSaldoMulta(f) {
+        return Math.max(0, f.multa - f.abonoMulta);
+      }
+
+      // Obtener saldo de factura pendiente
+      function calcularSaldoFactura(f) {
+        const monto = calcularMontoBase(f);
+        return Math.max(0, monto - f.abonoFactura);
+      }
+
+      // Calcular total pendiente
+      function calcularTotalPendiente() {
+        if (!clienteActual) return 0;
+
+        return clienteActual.facturas.reduce((sum, f) => {
+          const saldoMulta = calcularSaldoMulta(f);
+          const saldoFactura = calcularSaldoFactura(f);
+          return sum + saldoMulta + saldoFactura;
+        }, 0);
+      }
+
+      // Renderizar facturas colapsables
+      function renderizarFacturas() {
+        if (!clienteActual) return;
+
+        const lista = document.getElementById('listaFacturas');
+
+        lista.innerHTML = clienteActual.facturas
+          .map((f, index) => {
+            const montoBase = calcularMontoBase(f);
+            const descuentoTerceraEdad = calcularDescuentoTerceraEdad(f);
+            const saldoMulta = calcularSaldoMulta(f);
+            const saldoFactura = calcularSaldoFactura(f);
+            const totalSaldo = saldoFactura + saldoMulta;
+
+            const totalAbonado = f.abonoFactura + f.abonoMulta;
+
+            const tieneAbono = totalAbonado > 0;
+            const estaPagada = totalSaldo === 0;
+
+            return `
+      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+
+        <!-- CABECERA -->
+        <button
+          onclick="toggleFactura(${index})"
+          class="
+            w-full
+            px-5 py-4
+            flex items-center justify-between
+            hover:bg-gray-50
+            transition-colors
+          "
+        >
+
+          <!-- IZQUIERDA -->
+          <div class="flex items-center gap-4">
+
+            <!-- TOGGLE -->
+            <div
+              id="icon-${index}"
+              class="
+                w-7 h-7
+                rounded-md
+                border border-gray-300
+                bg-white
+                flex items-center justify-center
+                text-gray-500
+                text-xs
+                transition-all
+              "
+            >
+              +
+            </div>
+
+            <!-- INFO -->
+            <div class="text-left">
+
+              <div class="flex items-center gap-2">
+
+                <h3 class="text-sm font-semibold text-gray-800">
+                  ${f.mes}
+                </h3>
+
+                ${
+                  estaPagada
+                    ? `
+                      <span class="px-2 py-0.5 text-[10px] rounded bg-emerald-100 text-emerald-700 font-semibold">
+                        PAGADA
+                      </span>
+                    `
+                    : ''
+                }
+
+                ${
+                  tieneAbono && !estaPagada
+                    ? `
+                      <span class="px-2 py-0.5 text-[10px] rounded bg-amber-100 text-amber-700 font-semibold">
+                        ABONO
+                      </span>
+                    `
+                    : ''
+                }
+
+              </div>
+
+              <div class="text-xs text-gray-500 mt-1">
+                ${f.conMedidor ? `Consumo registrado: ${f.consumo}m³` : `Servicio tarifa fija`}
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- DERECHA -->
+          <div class="text-right">
+
+            <div class="text-lg font-semibold text-gray-800">
+              $${totalSaldo.toFixed(2)}
+            </div>
+
+            ${
+              tieneAbono
+                ? `
+                  <div class="text-xs text-amber-700 mt-1">
+                    Abonado: $${totalAbonado.toFixed(2)}
+                  </div>
+                `
+                : ''
+            }
+
+            ${
+              saldoMulta > 0
+                ? `
+                  <div class="text-xs text-red-600 mt-1">
+                    Incluye mora pendiente
+                  </div>
+                `
+                : ''
+            }
+
+          </div>
+
+        </button>
+
+        <!-- DETALLE -->
+        <div
+          id="detail-${index}"
+          class="hidden border-t border-gray-200 bg-gray-50"
+        >
+
+          <div class="p-5">
+
+            <!-- RESUMEN -->
+            <div class="grid grid-cols-3 gap-3 mb-4">
+
+              <div class="bg-white border border-gray-200 rounded-md p-3">
+                <div class="text-[11px] text-gray-500 uppercase tracking-wide">
+                  Consumo
+                </div>
+
+                <div class="text-base font-semibold text-gray-800 mt-1">
+                  ${f.consumo || 0}m³
+                </div>
+              </div>
+
+              <div class="bg-white border border-gray-200 rounded-md p-3">
+                <div class="text-[11px] text-gray-500 uppercase tracking-wide">
+                  Factura neta
+                </div>
+
+                <div class="text-base font-semibold text-gray-800 mt-1">
+                  $${montoBase.toFixed(2)}
+                </div>
+              </div>
+
+              <div class="bg-white border border-gray-200 rounded-md p-3">
+                <div class="text-[11px] text-gray-500 uppercase tracking-wide">
+                  Saldo total
+                </div>
+
+                <div class="text-base font-semibold ${totalSaldo > 0 ? 'text-gray-800' : 'text-emerald-700'} mt-1">
+                  $${totalSaldo.toFixed(2)}
+                </div>
+              </div>
+
+            </div>
+
+            <!-- TABLA -->
+            <div class="bg-white border border-gray-200 rounded-md overflow-hidden">
+
+              <table class="w-full text-sm">
+
+                <tbody class="divide-y divide-gray-100">
+
+                  ${
+                    f.conMedidor
+                      ? `
+                        <tr>
+                          <td class="px-4 py-3 text-gray-600">
+                            Consumo de Agua
+                          </td>
+
+                          <td class="px-4 py-3 text-right text-gray-800 font-medium">
+                            ${f.consumo}m³ × $${clienteActual.isTanquero ? PRECIO_TANQUERO_M3.toFixed(2) : PRECIO_POR_M3.toFixed(2)}
+                          </td>
+                        </tr>
+                      `
+                      : ''
+                  }
+
+                  ${
+                    f.conMedidor
+                      ? `
+                        <tr>
+                          <td class="px-4 py-3 text-gray-600">
+                            Subtotal consumo
+                          </td>
+
+                          <td class="px-4 py-3 text-right text-gray-800 font-medium">
+                            $${calcularSubtotalConsumo(f).toFixed(2)}
+                          </td>
+                        </tr>
+                      `
+                      : ''
+                  }
+
+                  ${
+                    clienteActual.tieneDescuentoTercedadEdad
+                      ? `
+                        <tr class="bg-amber-50">
+
+                          <td class="px-4 py-3 text-amber-800">
+                            Descuento Tercera Edad (50%)
+                          </td>
+
+                          <td class="px-4 py-3 text-right font-medium text-amber-800">
+                            -$${descuentoTerceraEdad.toFixed(2)}
+                          </td>
+
+                        </tr>
+    `
+                      : ''
+                  }
+
+                  ${
+                    f.extras
+                      ? f.extras
+                          .map(
+                            (e) => `
+                            <tr>
+                              <td class="px-4 py-3 text-gray-600">
+                                ${e.concepto}
+                              </td>
+
+                              <td class="px-4 py-3 text-right font-medium text-gray-800">
+                                +$${e.monto.toFixed(2)}
+                              </td>
+                            </tr>
+                          `,
+                          )
+                          .join('')
+                      : ''
+                  }
+
+                  ${
+                    f.multa > 0
+                      ? `
+                        <tr class="${saldoMulta > 0 ? 'bg-red-50' : 'bg-emerald-50'}">
+
+                          <td class="px-4 py-3 ${saldoMulta > 0 ? 'text-red-700' : 'text-emerald-700'}">
+                            Mora
+                          </td>
+
+                          <td class="px-4 py-3 text-right font-medium ${saldoMulta > 0 ? 'text-red-700' : 'text-emerald-700'}">
+                            $${saldoMulta.toFixed(2)}
+                          </td>
+
+                        </tr>
+                      `
+                      : ''
+                  }
+
+                  ${
+                    f.abonoFactura > 0
+                      ? `
+                        <tr class="bg-blue-50">
+
+                          <td class="px-4 py-3 text-blue-800">
+                            Abono aplicado a factura
+                          </td>
+
+                          <td class="px-4 py-3 text-right font-medium text-blue-800">
+                            -$${f.abonoFactura.toFixed(2)}
+                          </td>
+
+                        </tr>
+                      `
+                      : ''
+                  }
+
+                  ${
+                    f.abonoMulta > 0
+                      ? `
+                        <tr class="bg-blue-50">
+
+                          <td class="px-4 py-3 text-blue-800">
+                            Abono aplicado a mora
+                          </td>
+
+                          <td class="px-4 py-3 text-right font-medium text-blue-800">
+                            -$${f.abonoMulta.toFixed(2)}
+                          </td>
+
+                        </tr>
+                      `
+                      : ''
+                  }
+
+                </tbody>
+
+                <!-- FOOTER -->
+                <tfoot class="bg-gray-100 border-t border-gray-300">
+
+                  <tr>
+
+                    <td class="px-4 py-4 font-semibold text-gray-700 uppercase tracking-wide text-xs">
+                      Total Pendiente
+                    </td>
+
+                    <td class="px-4 py-4 text-right font-semibold text-gray-900">
+                      $${totalSaldo.toFixed(2)}
+                    </td>
+
+                  </tr>
+
+                </tfoot>
+
+              </table>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+      `;
+          })
+          .join('');
+      }
+
+      // Toggle detalle de factura
+      function toggleFactura(index) {
+        const detail = document.getElementById(`detail-${index}`);
+        const icon = document.getElementById(`icon-${index}`);
+
+        const isHidden = detail.classList.contains('hidden');
+
+        detail.classList.toggle('hidden');
+
+        if (isHidden) {
+          icon.innerHTML = '−';
+          icon.classList.add('bg-blue-50');
+          icon.classList.add('border-blue-200');
+          icon.classList.add('text-blue-700');
+        } else {
+          icon.innerHTML = '+';
+          icon.classList.remove('bg-blue-50');
+          icon.classList.remove('border-blue-200');
+          icon.classList.remove('text-blue-700');
+        }
+      }
+
+      // Actualizar panel de cobro
+      function actualizarPanelCobro() {
+        if (!clienteActual) {
+          document.getElementById('totalPendiente').textContent = '$0.00';
+          document.getElementById('detalleFacturas').textContent = '—';
+          return;
+        }
+
+        const total = calcularTotalPendiente();
+        const facturasAtrasadas = clienteActual.facturas.filter((f) => {
+          const saldoMulta = calcularSaldoMulta(f);
+          const saldoFactura = calcularSaldoFactura(f);
+          return saldoMulta + saldoFactura > 0;
+        }).length;
+
+        document.getElementById('totalPendiente').textContent = `$${total.toFixed(2)}`;
+        document.getElementById('detalleFacturas').textContent = facturasAtrasadas > 0 ? `${facturasAtrasadas} factura${facturasAtrasadas > 1 ? 's' : ''} pendiente${facturasAtrasadas > 1 ? 's' : ''}` : '✓ Sin deuda';
+      }
+
+      // Procesar cobro
+      function procesarCobro() {
+        if (!clienteActual) {
+          alert('Seleccione un cliente válido');
+          return;
+        }
+
+        const efectivo = parseFloat(document.getElementById('efectivoRecibido').value || 0);
+        const totalPendiente = calcularTotalPendiente();
+
+        if (efectivo <= 0) {
+          alert('Ingrese un monto válido');
+          return;
+        }
+
+        if (totalPendiente === 0) {
+          alert('No hay deuda pendiente');
+          return;
+        }
+
+        // Aplicar pago desde el mes mas antiguo: multa y factura del mismo mes antes de avanzar.
+        let restante = efectivo;
+        const facturasPagadas = [];
+
+        for (let i = 0; i < clienteActual.facturas.length && restante > 0; i++) {
+          const factura = clienteActual.facturas[i];
+          const saldoMulta = calcularSaldoMulta(factura);
+
+          if (saldoMulta > 0) {
+            if (restante >= saldoMulta) {
+              restante -= saldoMulta;
+              factura.abonoMulta = factura.multa;
+              facturasPagadas.push({ mes: factura.mes, monto: saldoMulta, concepto: 'Multa', tipo: 'completo' });
+            } else {
+              factura.abonoMulta += restante;
+              facturasPagadas.push({ mes: factura.mes, monto: restante, concepto: 'Multa', tipo: 'abono' });
+              restante = 0;
+            }
+          }
+
+          if (restante <= 0) break;
+
+          const saldoFactura = calcularSaldoFactura(factura);
+
+          if (saldoFactura > 0) {
+            if (restante >= saldoFactura) {
+              restante -= saldoFactura;
+              factura.abonoFactura = calcularMontoBase(factura);
+              facturasPagadas.push({ mes: factura.mes, monto: saldoFactura, concepto: 'Factura', tipo: 'completo' });
+            } else {
+              factura.abonoFactura += restante;
+              facturasPagadas.push({ mes: factura.mes, monto: restante, concepto: 'Factura', tipo: 'abono' });
+              restante = 0;
+            }
+          }
+        }
+
+        // Determinar tipo de transacción
+        const totalPagado = efectivo - restante;
+        const esAbonoTotal = totalPendiente > totalPagado;
+        const cambio = restante;
+        const tipoTransaccion = esAbonoTotal ? 'Abono Parcial' : 'Pago Completo';
+
+        // Guardar en historial
+        const transaccion = {
+          fecha: new Date().toLocaleString('es-ES'),
+          tipo: tipoTransaccion,
+          efectivoRecibido: efectivo,
+          facturasPagadas: facturasPagadas,
+          cambio: cambio,
+          saldoRestante: calcularTotalPendiente(),
+        };
+        historialTransacciones.unshift(transaccion);
+
+        // Mostrar resultado
+        mostrarResultado(transaccion);
+
+        // Actualizar UI
+        renderizarFacturas();
+        actualizarPanelCobro();
+        actualizarHistorialTransacciones();
+        document.getElementById('efectivoRecibido').value = '';
+      }
+
+      // Mostrar resultado del pago
+      function mostrarResultado(transaccion) {
+        const resultado = document.getElementById('resultadoPago');
+        const textResultado = document.getElementById('textResultado');
+
+        let html = `<div class="font-bold text-emerald-900 mb-2 text-sm">${transaccion.tipo}</div>`;
+        html += '<div class="space-y-1 text-emerald-900 border-b pb-2 mb-2 text-xs">';
+
+        transaccion.facturasPagadas.forEach((f, idx) => {
+          const label = f.tipo === 'completo' ? '✓' : '↳';
+          html += `<div class="flex justify-between"><span>${label} ${f.mes} (${f.concepto})</span> <span class="font-semibold">$${f.monto.toFixed(2)}</span></div>`;
+        });
+
+        html += '</div>';
+
+        if (transaccion.cambio > 0) {
+          html += `<div class="font-bold text-emerald-900 text-xs"><span>Cambio:</span> <span class="float-right">$${transaccion.cambio.toFixed(2)}</span></div>`;
+        }
+
+        if (transaccion.saldoRestante > 0) {
+          html += `<div class="text-amber-900 font-semibold text-xs mt-1"><span>Saldo Pendiente:</span> <span class="float-right">$${transaccion.saldoRestante.toFixed(2)}</span></div>`;
+        } else {
+          html += `<div class="text-emerald-900 font-semibold text-xs mt-1">✓ Todas las Facturas Pagadas</div>`;
+        }
+
+        textResultado.innerHTML = html;
+        resultado.classList.remove('hidden');
+      }
+
+      // Actualizar historial de transacciones
+      function actualizarHistorialTransacciones() {
+        const historial = document.getElementById('historialTransacciones');
+
+        if (historialTransacciones.length === 0) {
+          historial.innerHTML = '<div class="text-xs text-gray-500 text-center py-3">Sin transacciones registradas</div>';
+          return;
+        }
+
+        historial.innerHTML = historialTransacciones
+          .slice(0, 5)
+          .map(
+            (trans, idx) => `
+          <div class="border border-gray-300 rounded p-2 bg-gray-50">
+            <div class="flex justify-between items-start mb-1.5">
+              <div class="font-semibold text-gray-800 text-xs">${trans.tipo}</div>
+              <div class="text-xs text-gray-500">${trans.fecha}</div>
+            </div>
+            <div class="space-y-0.5 text-xs">
+              ${trans.facturasPagadas
+                .map(
+                  (f) => `
+                <div class="flex justify-between text-gray-700">
+                  <span>${f.mes}</span>
+                  <span class="font-semibold">$${f.monto.toFixed(2)}</span>
+                </div>
+              `,
+                )
+                .join('')}
+            </div>
+            <div class="border-t border-gray-200 mt-1.5 pt-1.5 flex justify-between font-bold text-gray-700 text-xs">
+              <span>Efectivo: $${trans.efectivoRecibido.toFixed(2)}</span>
+              ${trans.cambio > 0 ? `<span class="text-emerald-600">Cambio: $${trans.cambio.toFixed(2)}</span>` : ''}
+            </div>
+          </div>
+        `,
+          )
+          .join('');
+      }
+
+      // Inicializar con cliente por defecto
+      cargarCliente(baseClientes['0706323193']);
+    </script>
+  </body>
+</html>
