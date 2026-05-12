@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Mantenimiento en Campo - Aguas Huaquillas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @keyframes scan {
+        0%,
+        100% {
+          top: 0;
+        }
+        50% {
+          top: calc(100% - 4px);
+        }
+      }
+      .animate-scan {
+        animation: scan 2s ease-in-out infinite;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-100 min-h-screen font-sans flex flex-col">
+    <header class="bg-blue-900 p-4 text-white flex items-center justify-between sticky top-0 z-50">
+      <div class="flex flex-col">
+        <div class="flex items-center gap-2"><span>💧</span> <span class="font-bold">Mantenimiento</span></div>
+        <span class="text-[10px] text-blue-300 font-bold tracking-wider uppercase mt-1">Ruta actual: 12/45 medidores</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="toggleConexion()" id="btnSync" class="text-[10px] font-black px-2 py-1 rounded bg-emerald-500 text-white shadow">ONLINE</button>
+        <span class="text-xs font-bold bg-blue-800 px-2 py-1 rounded border border-blue-700 shadow-inner">M-45</span>
+      </div>
+    </header>
+
+    <main class="p-4 space-y-4 flex-1 pb-24">
+      <!-- Botón Escáner -->
+      <div onclick="abrirScanner()" class="bg-white p-6 rounded-2xl shadow-sm text-center border-2 border-dashed border-slate-300 active:bg-slate-50 transition cursor-pointer flex flex-col items-center justify-center gap-3" id="boxCamara">
+        <div class="text-4xl mb-2" id="iconCamara">📷</div>
+        <p class="text-sm font-bold text-slate-600" id="textCamara">Tocar para Escanear Medidor</p>
+      </div>
+
+      <!-- Formulario Principal -->
+      <div id="formLectura" class="bg-white p-5 rounded-2xl shadow-sm space-y-5 hidden transition-all">
+        <div class="flex justify-between items-center border-b pb-2">
+          <h2 class="font-black text-slate-800 text-lg">Registro Técnico</h2>
+          <span class="text-xs font-mono font-bold text-blue-800 bg-blue-50 border border-blue-200 px-2 py-1 rounded" id="medidorDetectado">---</span>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-end mb-2">
+            <label class="text-xs text-slate-500 font-black uppercase tracking-wide">Lectura Actual (m³)</label>
+            <button onclick="document.getElementById('lecturaInput').value = ''" class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded hover:bg-slate-200">LIMPIAR</button>
+          </div>
+          <input type="number" id="lecturaInput" oninput="validarLectura()" class="w-full text-4xl font-black p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-600 outline-none text-center shadow-inner" placeholder="0" />
+          <div class="flex justify-between items-center mt-2">
+            <p class="text-[11px] font-bold text-slate-500">Lectura anterior: <span class="text-blue-600" id="lecturaAnteriorVal">1420</span> m³</p>
+            <span id="alertaLectura" class="text-[10px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded hidden">⚠️ MENOR A ANTERIOR</span>
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <button id="btnCorte" onclick="toggleAccion('Corte')" class="flex-1 bg-white text-rose-700 font-bold py-4 rounded-xl border-2 border-rose-100 active:bg-rose-50 transition shadow-sm">Corte</button>
+          <button id="btnRecon" onclick="toggleAccion('Reconexión')" class="flex-1 bg-white text-emerald-700 font-bold py-4 rounded-xl border-2 border-emerald-100 active:bg-emerald-50 transition shadow-sm">Reconexión</button>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl shadow-sm space-y-3 hidden transition-all" id="formAnomalia">
+        <div class="flex items-center justify-between">
+          <h2 class="font-bold text-slate-800 text-sm uppercase tracking-wide">Reportar Anomalía</h2>
+          <input type="checkbox" id="checkAnomalia" class="w-6 h-6 text-blue-600" onchange="document.getElementById('descAnomalia').disabled = !this.checked" />
+        </div>
+        <textarea id="descAnomalia" disabled class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm disabled:opacity-50 disabled:bg-slate-100 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" placeholder="Describa la manipulación, fuga o daño detectado..."></textarea>
+        <button
+          onclick="
+            this.innerHTML = '✅ Foto Adjuntada';
+            this.classList.add('bg-emerald-50', 'text-emerald-700', 'border-emerald-200');
+          "
+          class="w-full bg-slate-50 border border-slate-200 text-slate-600 font-bold py-4 rounded-xl flex items-center justify-center gap-2 active:bg-slate-100 transition shadow-sm"
+        >
+          <span>📎</span> Adjuntar Foto Evidencia
+        </button>
+      </div>
+    </main>
+
+    <!-- Botón Flotante Inferior -->
+    <div class="fixed bottom-0 left-0 w-full p-4 bg-white border-t border-slate-200 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40">
+      <button onclick="guardarSincronizar()" id="btnGuardar" class="w-full bg-blue-600 text-white font-black py-4 rounded-xl shadow-lg active:bg-blue-700 transition opacity-50 pointer-events-none text-lg">Guardar Registro y GPS</button>
+    </div>
+
+    <!-- Overlay de Escáner -->
+    <div id="scannerOverlay" class="fixed inset-0 bg-slate-900 z-50 flex flex-col transition-opacity opacity-0 pointer-events-none">
+      <div class="p-5 flex justify-between items-center text-white bg-black/50 absolute top-0 w-full z-10">
+        <div class="flex items-center gap-3">
+          <span class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></span>
+          <span class="font-bold text-sm tracking-wide">CÁMARA ACTIVA</span>
+        </div>
+        <button onclick="cerrarScanner()" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold active:bg-white/30">✕</button>
+      </div>
+
+      <div class="flex-1 relative flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="w-64 h-64 border-4 border-emerald-500 rounded-3xl relative overflow-hidden bg-black/40">
+          <div class="absolute top-0 left-0 w-full h-1 bg-emerald-400 shadow-[0_0_15px_3px_#34d399] animate-scan"></div>
+          <div class="absolute inset-0 flex items-center justify-center opacity-30 text-emerald-500">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+              <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+              <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+              <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+              <rect x="7" y="7" width="10" height="10" rx="1" />
+            </svg>
+          </div>
+        </div>
+        <p class="text-white mt-8 font-bold tracking-wide text-sm bg-black/50 px-4 py-2 rounded-full">Alinee el código de barras o QR</p>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-bold opacity-0 transition-opacity pointer-events-none z-50 whitespace-nowrap"></div>
+
+    <script>
+      let isOnline = true;
+      let accionSeleccionada = null;
+      let scannerTimeout;
+      let queue = JSON.parse(localStorage.getItem('syncQueue') || '[]');
+
+      function toggleConexion() {
+        isOnline = !isOnline;
+        const btn = document.getElementById('btnSync');
+        if (isOnline) {
+          btn.textContent = 'ONLINE';
+          btn.className = 'text-[10px] font-black px-2 py-1 rounded bg-emerald-500 text-white shadow';
+          if (queue.length > 0) procesarCola();
+        } else {
+          btn.textContent = 'OFFLINE';
+          btn.className = 'text-[10px] font-black px-2 py-1 rounded bg-rose-500 text-white shadow';
+        }
+      }
+
+      function abrirScanner() {
+        const scanner = document.getElementById('scannerOverlay');
+        scanner.classList.remove('opacity-0', 'pointer-events-none');
+
+        // Simular un escaneo exitoso después de 1.5 segundos
+        scannerTimeout = setTimeout(() => {
+          cerrarScanner();
+          procesarEscaneoExitoso();
+        }, 1500);
+      }
+
+      function cerrarScanner() {
+        const scanner = document.getElementById('scannerOverlay');
+        scanner.classList.add('opacity-0', 'pointer-events-none');
+        clearTimeout(scannerTimeout);
+      }
+
+      function procesarEscaneoExitoso() {
+        document.getElementById('boxCamara').classList.add('bg-emerald-50', 'border-emerald-200');
+        document.getElementById('iconCamara').textContent = '✅';
+        document.getElementById('textCamara').textContent = 'Medidor AH-9912 Escaneado';
+        document.getElementById('medidorDetectado').textContent = 'AH-9912';
+
+        // Mostrar el formulario
+        document.getElementById('formLectura').classList.remove('hidden');
+        document.getElementById('formAnomalia').classList.remove('hidden');
+        document.getElementById('btnGuardar').classList.remove('opacity-50', 'pointer-events-none');
+
+        // Hacer focus automático en el input numérico para agilizar la captura
+        setTimeout(() => document.getElementById('lecturaInput').focus(), 300);
+      }
+
+      function validarLectura() {
+        const actual = parseFloat(document.getElementById('lecturaInput').value);
+        const anterior = parseFloat(document.getElementById('lecturaAnteriorVal').textContent);
+        const alerta = document.getElementById('alertaLectura');
+
+        if (!isNaN(actual) && actual < anterior) {
+          alerta.classList.remove('hidden');
+        } else {
+          alerta.classList.add('hidden');
+        }
+      }
+
+      function toggleAccion(tipo) {
+        if (accionSeleccionada === tipo) {
+          accionSeleccionada = null; // Deseleccionar
+        } else {
+          accionSeleccionada = tipo;
+        }
+
+        document.getElementById('btnCorte').classList.remove('bg-rose-100');
+        document.getElementById('btnRecon').classList.remove('bg-emerald-100');
+
+        if (accionSeleccionada === 'Corte') document.getElementById('btnCorte').classList.add('bg-rose-100');
+        if (accionSeleccionada === 'Reconexión') document.getElementById('btnRecon').classList.add('bg-emerald-100');
+      }
+
+      function guardarSincronizar() {
+        const lectura = document.getElementById('lecturaInput').value;
+        if (!lectura) {
+          document.getElementById('lecturaInput').classList.add('ring-4', 'ring-rose-200', 'border-rose-500');
+          setTimeout(() => document.getElementById('lecturaInput').classList.remove('ring-4', 'ring-rose-200', 'border-rose-500'), 1000);
+          return mostrarToast('Debe ingresar la lectura actual');
+        }
+
+        const btn = document.getElementById('btnGuardar');
+        btn.innerHTML = '⏳ Obteniendo GPS...';
+        btn.disabled = true;
+        btn.classList.add('opacity-80');
+
+        // Solicitar GPS
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              finalizarGuardado(lectura, pos.coords.latitude, pos.coords.longitude);
+            },
+            (err) => {
+              mostrarToast('No se pudo obtener GPS preciso. Usando última ubicación.');
+              finalizarGuardado(lectura, -3.481, -80.2309); // Coordenadas mockeadas
+            },
+            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 },
+          );
+        } else {
+          finalizarGuardado(lectura, -3.481, -80.2309);
+        }
+      }
+
+      function finalizarGuardado(lectura, lat, lng) {
+        const data = {
+          medidor: 'AH-9912',
+          lectura: parseFloat(lectura),
+          accion: accionSeleccionada,
+          lat,
+          lng,
+          timestamp: new Date().toISOString(),
+        };
+
+        if (isOnline) {
+          mostrarToast('✅ Guardado y Sincronizado correctamente');
+        } else {
+          queue.push(data);
+          localStorage.setItem('syncQueue', JSON.stringify(queue));
+          mostrarToast('💾 Guardado local (' + queue.length + ' pendientes)');
+        }
+
+        // Reset form
+        setTimeout(() => location.reload(), 1500);
+      }
+
+      function procesarCola() {
+        mostrarToast('Sincronizando ' + queue.length + ' registros atrasados...');
+        queue = [];
+        localStorage.setItem('syncQueue', JSON.stringify(queue));
+      }
+
+      function mostrarToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.remove('opacity-0', 'pointer-events-none');
+        setTimeout(() => t.classList.add('opacity-0'), 2000);
+      }
+
+      // Chequeo de conexión nativo del navegador
+      window.addEventListener('online', () => {
+        if (!isOnline) toggleConexion();
+      });
+      window.addEventListener('offline', () => {
+        if (isOnline) toggleConexion();
+      });
+    </script>
+  </body>
+</html>

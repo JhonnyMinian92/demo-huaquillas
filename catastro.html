@@ -769,14 +769,17 @@
         <div class="sidebar-header">
           <input type="text" id="searchInput" class="search-input" placeholder="Buscar por nombre, cédula, ID o medidor..." />
 
-          <div class="chip-group">
-            <button class="chip active">Todos</button>
+          <div class="chip-group flex items-center justify-between w-full">
+            <div class="flex gap-2 flex-wrap flex-1" id="filterChips">
+              <button class="chip active">Todos</button>
 
-            <button class="chip">Activos</button>
+              <button class="chip">Activos</button>
 
-            <button class="chip">Suspendidos</button>
+              <button class="chip">Suspendidos</button>
 
-            <button class="chip">Fugas</button>
+              <button class="chip">Fugas</button>
+            </div>
+            <button onclick="toggleModoEdicion()" id="btnModoEdicion" class="chip ml-2 bg-amber-50 border-amber-200 text-amber-700 flex-shrink-0">✏️ Modo Edición</button>
           </div>
         </div>
 
@@ -972,6 +975,7 @@
       ];
 
       let filtroActual = 'todos';
+      let modoEdicion = false;
 
       let predioSeleccionado = predios[0];
 
@@ -1013,6 +1017,44 @@
 
           return coincideTexto && coincideFiltro;
         });
+
+        if (modoEdicion) {
+          container.innerHTML = `
+            <div class="overflow-x-auto bg-white border border-slate-200 rounded-lg shadow-sm">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase">
+                  <tr>
+                    <th class="p-3">ID</th>
+                    <th class="p-3">Nombre</th>
+                    <th class="p-3">Medidor</th>
+                    <th class="p-3">Categoría</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  ${resultado
+                    .map(
+                      (p) => `
+                    <tr class="hover:bg-slate-50">
+                      <td class="p-3 font-mono text-xs">${p.id}</td>
+                      <td class="p-2"><input type="text" value="${p.nombre}" onchange="actualizarDato('${p.id}', 'nombre', this.value)" class="w-full p-1.5 border border-transparent hover:border-slate-300 focus:border-ocean rounded outline-none bg-transparent focus:bg-white transition-all"></td>
+                      <td class="p-2"><input type="text" value="${p.medidor}" onchange="actualizarDato('${p.id}', 'medidor', this.value)" class="w-full p-1.5 border border-transparent hover:border-slate-300 focus:border-ocean rounded outline-none bg-transparent focus:bg-white transition-all"></td>
+                      <td class="p-2">
+                        <select onchange="actualizarDato('${p.id}', 'categoria', this.value)" class="w-full p-1.5 border border-transparent hover:border-slate-300 focus:border-ocean rounded outline-none bg-transparent focus:bg-white transition-all text-xs">
+                          <option value="Doméstico" ${p.categoria === 'Doméstico' ? 'selected' : ''}>Doméstico</option>
+                          <option value="Comercial" ${p.categoria === 'Comercial' ? 'selected' : ''}>Comercial</option>
+                          <option value="Industrial" ${p.categoria === 'Industrial' ? 'selected' : ''}>Industrial</option>
+                        </select>
+                      </td>
+                    </tr>
+                  `,
+                    )
+                    .join('')}
+                </tbody>
+              </table>
+            </div>
+          `;
+          return;
+        }
 
         container.innerHTML = resultado
           .map(
@@ -1069,7 +1111,23 @@
           .join('');
       }
 
+      function toggleModoEdicion() {
+        modoEdicion = !modoEdicion;
+        const btn = document.getElementById('btnModoEdicion');
+        btn.classList.toggle('bg-amber-500', modoEdicion);
+        btn.classList.toggle('text-white', modoEdicion);
+        renderPredios();
+      }
+
+      function actualizarDato(id, campo, valor) {
+        const predio = predios.find((p) => p.id === id);
+        if (predio) predio[campo] = valor;
+        mostrarToast('Cambio guardado en ' + id);
+        if (predioSeleccionado.id === id) renderDetalle();
+      }
+
       function seleccionarPredio(id) {
+        if (modoEdicion) return;
         predioSeleccionado = predios.find((p) => p.id === id);
 
         renderPredios();
@@ -1215,6 +1273,17 @@
             titulo: 'Orden Técnica',
             subtitulo: 'Mantenimiento o reparación',
           },
+
+          {
+            id: 'multa',
+            icono: `
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      `,
+            titulo: 'Imputar Multa',
+            subtitulo: 'Infracción o conexión ilícita',
+          },
         );
 
         container.innerHTML = acciones
@@ -1260,6 +1329,8 @@
           fuga: 'Reporte de Fuga',
 
           orden: 'Orden Técnica',
+
+          multa: 'Aplicación de Multa Administrativa',
         };
 
         document.getElementById('drawerTitle').textContent = titulos[tipo];
@@ -1290,6 +1361,19 @@
                   Inspección Especial
                 </option>
               </select>
+            </div>
+          `;
+        }
+
+        if (tipo === 'multa') {
+          extra = `
+            <div>
+              <label class="text-[12px] font-bold text-slate-600">Valor de la Multa ($)</label>
+              <input type="number" step="0.01" class="input mt-2" placeholder="Ej. 150.00" />
+            </div>
+            <div>
+              <label class="text-[12px] font-bold text-slate-600">Resolución Legal / Ordenanza</label>
+              <input type="text" class="input mt-2" placeholder="No. de Resolución" />
             </div>
           `;
         }
@@ -1378,9 +1462,9 @@
         }, 2500);
       }
 
-      document.querySelectorAll('.chip').forEach((chip) => {
+      document.querySelectorAll('#filterChips .chip').forEach((chip) => {
         chip.addEventListener('click', function () {
-          document.querySelectorAll('.chip').forEach((c) => c.classList.remove('active'));
+          document.querySelectorAll('#filterChips .chip').forEach((c) => c.classList.remove('active'));
 
           this.classList.add('active');
 

@@ -7,9 +7,14 @@
     <title>Gestión de Quejas y Requerimientos</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .kanban-col { min-width: 320px; max-width: 360px; }
+      .ticket-card.dragging { opacity: 0.5; transform: scale(0.95); }
+      .drawer { transition: transform 0.3s ease-in-out; }
+    </style>
   </head>
 
-  <body class="bg-slate-100 h-screen overflow-hidden font-sans flex flex-col">
+  <body class="bg-slate-50 h-screen overflow-hidden font-sans flex flex-col">
     <!-- HEADER -->
     <header class="bg-gradient-to-r from-blue-900 to-blue-800 shadow-md p-4 flex justify-between items-center">
       <div class="flex items-center gap-3">
@@ -134,7 +139,7 @@
           cliente: 'Ana Mendoza',
           cedula: '0709876543',
           predio: 'PRE-1045',
-          estado: 'EN ANÁLISIS',
+          estado: 'EN PROCESO',
           tipo: 'Queja',
           cerrado: false,
           descripcion: 'Mi factura llegó por $85 cuando normalmente pago $12. Solicito revisión del medidor.',
@@ -349,13 +354,14 @@
           document.getElementById('contenedorRespuesta').classList.remove('hidden');
         }
 
-        renderTickets(document.getElementById('buscador').value);
+        document.getElementById('drawerOverlay').classList.remove('opacity-0', 'pointer-events-none');
+        document.getElementById('ticketDrawer').classList.remove('translate-x-full');
       }
 
-      // BUSCADOR
-      document.getElementById('buscador').addEventListener('input', (e) => {
-        renderTickets(e.target.value);
-      });
+      function cerrarDrawer() {
+        document.getElementById('drawerOverlay').classList.add('opacity-0', 'pointer-events-none');
+        document.getElementById('ticketDrawer').classList.add('translate-x-full');
+      }
 
       // DERIVAR
       function derivarTicket() {

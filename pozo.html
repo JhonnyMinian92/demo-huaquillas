@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Control de Pozos - Aguas Huaquillas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-50 min-h-screen font-sans p-6">
+    <div class="max-w-5xl mx-auto space-y-8">
+      <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-800">🚰 Control de Pozos y Tanqueros</h1>
+          <p class="text-sm text-slate-500 mt-1">Operador: <span class="font-bold text-slate-700" id="operadorNombreDisplay">P. Gómez</span> | Asignación: <span class="font-bold text-blue-700" id="operadorPozoDisplay">Pozo Norte - Huaquillas</span></p>
+        </div>
+        <span class="text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 shadow-sm">● Sistema Sincronizado</span>
+      </header>
+
+      <div class="grid grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+          <div class="flex justify-between mb-4">
+            <span class="text-4xl">🏗️</span>
+            <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">OPERATIVO</span>
+          </div>
+          <h2 class="text-xl font-bold">Pozo Norte - Huaquillas</h2>
+          <p class="text-sm text-slate-500">Caudal: 45 L/s | Operador: P. Gómez</p>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+          <div class="flex justify-between mb-4">
+            <span class="text-4xl">🏗️</span>
+            <span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold">MANTENIMIENTO</span>
+          </div>
+          <h2 class="text-xl font-bold">Pozo Sur - Bypass</h2>
+          <p class="text-sm text-slate-500">Caudal: 0 L/s | Reinicio estimado: 4h</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-6 bg-slate-50 border-b flex justify-between items-center">
+          <h3 class="font-bold text-slate-700">Bitácora de Despachos a Tanqueros</h3>
+          <button onclick="abrirRegistro()" class="bg-blue-600 hover:bg-blue-700 transition text-white px-4 py-2 rounded-lg text-sm font-bold">+ Registrar Despacho</button>
+        </div>
+        <table class="w-full text-left">
+          <thead class="text-xs font-bold text-slate-500 uppercase bg-white border-b">
+            <tr>
+              <th class="p-4">Fecha / Pozo</th>
+              <th class="p-4">Tanquero / RUC</th>
+              <th class="p-4">Volumen</th>
+              <th class="p-4">Total a Planilla</th>
+              <th class="p-4">Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tablaVentas" class="text-sm divide-y">
+            <!-- Renderizado por JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- OVERLAY Y DRAWER DE REGISTRO -->
+    <div id="overlayPozo" class="fixed inset-0 bg-slate-900/40 opacity-0 pointer-events-none transition z-40" onclick="cerrarRegistro()"></div>
+    <aside id="drawerPozo" class="fixed top-0 right-0 w-full max-w-md h-full bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex flex-col">
+      <div class="p-5 border-b bg-slate-50 flex justify-between items-center">
+        <h2 class="font-bold text-slate-800">Registrar Venta de Agua</h2>
+        <button onclick="cerrarRegistro()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-200 text-slate-600 hover:bg-slate-300 transition font-bold">✕</button>
+      </div>
+      <div class="p-6 space-y-6 flex-1 overflow-y-auto">
+        <!-- Pozo Fijo -->
+        <div>
+          <div class="bg-blue-50/50 p-3 rounded-xl border border-blue-100 flex justify-between items-center">
+            <span class="text-xs font-bold text-blue-600 uppercase tracking-wide">Ubicación Asignada</span>
+            <span class="text-sm font-black text-blue-900" id="drawerPozoFijo">Pozo Norte - Huaquillas</span>
+          </div>
+        </div>
+
+        <!-- Buscador Tanquero -->
+        <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl">
+          <label class="block text-xs font-bold text-blue-800 uppercase mb-2">Buscar Tanquero Autorizado</label>
+          <div class="relative">
+            <input type="text" id="buscarTanqueroInput" class="w-full p-4 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase text-lg font-bold shadow-sm" placeholder="RUC, PLACA O NOMBRE..." oninput="buscarTanqueroVivo()" autocomplete="off" />
+          </div>
+          <div id="resultadoTanquero" class="mt-3 hidden bg-white p-3 rounded-lg border border-blue-200 shadow-sm text-sm">
+            <!-- Data here -->
+          </div>
+        </div>
+
+        <!-- Volumen -->
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Volumen a Despachar (m³)</label>
+          <input type="number" id="volumenInput" class="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-3xl font-black text-slate-800 text-center shadow-sm" placeholder="0" min="1" oninput="calcularTotal()" disabled />
+          <div class="flex gap-2 mt-3" id="quickVolButtons">
+            <button onclick="setVol(5)" class="flex-1 bg-white border border-slate-300 rounded-lg py-3 text-sm font-black text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 transition shadow-sm disabled:opacity-50" disabled>5 m³</button>
+            <button onclick="setVol(10)" class="flex-1 bg-white border border-slate-300 rounded-lg py-3 text-sm font-black text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 transition shadow-sm disabled:opacity-50" disabled>10 m³</button>
+            <button onclick="setVol('MAX')" class="flex-1 bg-blue-50 border border-blue-200 rounded-lg py-3 text-sm font-black text-blue-700 hover:bg-blue-100 transition shadow-sm disabled:opacity-50" disabled>FULL</button>
+          </div>
+          <p class="text-[11px] font-bold text-slate-400 mt-3 text-center">Tarifa oficial para tanqueros: $0.35 por m³</p>
+        </div>
+
+        <!-- Total -->
+        <div class="bg-slate-800 p-4 rounded-xl flex justify-between items-center text-white">
+          <span class="text-xs font-bold uppercase tracking-wider">A cargar en Planilla:</span>
+          <span class="text-2xl font-black text-emerald-400" id="totalCalculado">$0.00</span>
+        </div>
+      </div>
+      <div class="p-5 border-t bg-slate-50 flex gap-3">
+        <button onclick="cerrarRegistro()" class="flex-1 bg-white border border-slate-300 text-slate-700 font-bold py-4 rounded-xl hover:bg-slate-100 transition">Cancelar</button>
+        <button id="btnGuardarVenta" onclick="guardarVenta()" class="flex-1 bg-blue-600 text-white font-bold py-4 rounded-xl opacity-50 pointer-events-none transition shadow-lg text-lg">Confirmar Venta</button>
+      </div>
+    </aside>
+
+    <script>
+      const TARIFA_TANQUERO = 0.35;
+      const operadorActual = {
+        nombre: 'P. Gómez',
+        pozo: 'Pozo Norte - Huaquillas',
+      };
+      let tanqueroSeleccionado = null;
+      let ventas = [{ fecha: 'Hoy, 08:30', pozo: 'Pozo Norte - Huaquillas', ruc: '0706323194001', nombre: 'JUAN CARLOS LÓPEZ', placa: 'OBA-1234', vol: 15, valor: 5.25 }];
+
+      const baseTanqueros = {
+        '0706323194001': { ruc: '0706323194001', placa: 'OBA-1234', nombre: 'JUAN CARLOS LÓPEZ', capMax: 15 },
+        '0992874412001': { ruc: '0992874412001', placa: 'GTC-9988', nombre: 'AGUAS DEL SUR S.A.', capMax: 20 },
+        'OBA-1234': { ruc: '0706323194001', placa: 'OBA-1234', nombre: 'JUAN CARLOS LÓPEZ', capMax: 15 },
+        'GTC-9988': { ruc: '0992874412001', placa: 'GTC-9988', nombre: 'AGUAS DEL SUR S.A.', capMax: 20 },
+      };
+
+      function renderVentas() {
+        const tbody = document.getElementById('tablaVentas');
+        if (ventas.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-500">No hay ventas registradas hoy.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = ventas
+          .map(
+            (v) => `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-4">
+              <div class="font-bold text-slate-800">${v.fecha}</div>
+              <div class="text-[11px] text-slate-500">${v.pozo}</div>
+            </td>
+            <td class="p-4">
+              <div class="font-bold text-slate-800">${v.nombre}</div>
+              <div class="text-[11px] font-mono text-slate-500">RUC: ${v.ruc} | Placa: ${v.placa}</div>
+            </td>
+            <td class="p-4 font-bold text-slate-700">${v.vol} m³</td>
+            <td class="p-4 font-black text-blue-700">$${v.valor.toFixed(2)}</td>
+            <td class="p-4">
+              <span class="px-2 py-1 bg-amber-100 text-amber-800 text-[10px] font-bold rounded-full uppercase tracking-wider">A Planilla</span>
+            </td>
+          </tr>
+        `,
+          )
+          .join('');
+      }
+
+      function buscarTanqueroVivo() {
+        const input = document.getElementById('buscarTanqueroInput').value.trim().toUpperCase();
+        const resDiv = document.getElementById('resultadoTanquero');
+
+        if (!input) {
+          resDiv.classList.add('hidden');
+          tanqueroSeleccionado = null;
+          resetControlesVolumen();
+          return;
+        }
+
+        // Búsqueda parcial por Placa, RUC o Nombre
+        const matches = Object.values(baseTanqueros).filter((t) => t.ruc.includes(input) || t.placa.includes(input) || t.nombre.toUpperCase().includes(input));
+
+        // Eliminar duplicados (ya que baseTanqueros tiene llaves múltiples por el mismo objeto)
+        const uniqueMatches = Array.from(new Map(matches.map((item) => [item.ruc, item])).values());
+
+        if (uniqueMatches.length === 1 && (uniqueMatches[0].ruc === input || uniqueMatches[0].placa === input)) {
+          // Coincidencia exacta
+          seleccionarTanqueroObj(uniqueMatches[0]);
+        } else if (uniqueMatches.length > 0) {
+          // Mostrar sugerencias
+          tanqueroSeleccionado = null;
+          resetControlesVolumen();
+          resDiv.innerHTML = uniqueMatches
+            .map(
+              (t) => `
+            <div onclick="seleccionarTanqueroObjPorId('${t.ruc}')" class="p-3 border-b border-blue-100 hover:bg-blue-100 cursor-pointer transition rounded-lg mb-1 bg-white">
+              <div class="flex justify-between items-center"><span class="font-black text-slate-800 text-lg">${t.placa}</span> <span class="text-xs font-mono font-bold text-slate-500">${t.ruc}</span></div>
+              <div class="text-xs font-bold text-blue-700 mt-1">${t.nombre}</div>
+            </div>
+          `,
+            )
+            .join('');
+          resDiv.classList.remove('hidden');
+        } else {
+          tanqueroSeleccionado = null;
+          resetControlesVolumen();
+          resDiv.innerHTML = `<div class="text-rose-600 font-bold flex items-center gap-2 p-2"><span class="text-2xl">❌</span> No se encontró el tanquero</div>`;
+          resDiv.classList.remove('hidden');
+        }
+      }
+
+      function seleccionarTanqueroObjPorId(ruc) {
+        const t = Object.values(baseTanqueros).find((x) => x.ruc === ruc);
+        if (t) {
+          document.getElementById('buscarTanqueroInput').value = t.placa;
+          seleccionarTanqueroObj(t);
+        }
+      }
+
+      function seleccionarTanqueroObj(tanquero) {
+        const resDiv = document.getElementById('resultadoTanquero');
+        const volInput = document.getElementById('volumenInput');
+        tanqueroSeleccionado = tanquero;
+
+        resDiv.innerHTML = `
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-black text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full uppercase tracking-wide shadow-sm">✓ Autorizado</span>
+            <span class="text-sm font-mono font-black text-slate-500">${tanquero.placa}</span>
+          </div>
+          <div class="font-black text-slate-800 text-lg">${tanquero.nombre}</div>
+          <div class="text-xs font-bold text-slate-500 mb-3 mt-1">RUC: ${tanquero.ruc}</div>
+          <div class="text-[12px] font-black text-blue-800 bg-blue-100 px-3 py-2 rounded-lg inline-block border border-blue-200 shadow-inner">CAPACIDAD MAX: ${tanquero.capMax} m³</div>
+        `;
+        resDiv.classList.remove('hidden');
+        volInput.disabled = false;
+        volInput.max = tanquero.capMax;
+        volInput.value = tanquero.capMax; // sugerir capacidad maxima
+        calcularTotal();
+
+        // Habilitar botones rápidos
+        document.querySelectorAll('#quickVolButtons button').forEach((b) => (b.disabled = false));
+      }
+
+      function resetControlesVolumen() {
+        const volInput = document.getElementById('volumenInput');
+        volInput.disabled = true;
+        volInput.value = '';
+        document.getElementById('totalCalculado').textContent = '$0.00';
+        document.getElementById('btnGuardarVenta').classList.add('opacity-50', 'pointer-events-none');
+        document.querySelectorAll('#quickVolButtons button').forEach((b) => (b.disabled = true));
+      }
+
+      function setVol(val) {
+        if (!tanqueroSeleccionado) return;
+        const input = document.getElementById('volumenInput');
+        if (val === 'MAX') {
+          input.value = tanqueroSeleccionado.capMax;
+        } else {
+          input.value = val;
+        }
+        calcularTotal();
+      }
+
+      function calcularTotal() {
+        const vol = parseFloat(document.getElementById('volumenInput').value || 0);
+        const btnGuardar = document.getElementById('btnGuardarVenta');
+        const total = vol * TARIFA_TANQUERO;
+
+        document.getElementById('totalCalculado').textContent = '$' + total.toFixed(2);
+
+        if (vol > 0 && tanqueroSeleccionado) {
+          btnGuardar.classList.remove('opacity-50', 'pointer-events-none');
+          btnGuardar.classList.add('hover:bg-blue-700');
+        } else {
+          btnGuardar.classList.add('opacity-50', 'pointer-events-none');
+          btnGuardar.classList.remove('hover:bg-blue-700');
+        }
+      }
+
+      function abrirRegistro() {
+        document.getElementById('overlayPozo').classList.remove('opacity-0', 'pointer-events-none');
+        document.getElementById('drawerPozo').classList.remove('translate-x-full');
+
+        // Reset form y setear el pozo del operador
+        document.getElementById('drawerPozoFijo').textContent = operadorActual.pozo;
+        document.getElementById('buscarTanqueroInput').value = '';
+        document.getElementById('resultadoTanquero').classList.add('hidden');
+        resetControlesVolumen();
+        tanqueroSeleccionado = null;
+      }
+      function cerrarRegistro() {
+        document.getElementById('overlayPozo').classList.add('opacity-0', 'pointer-events-none');
+        document.getElementById('drawerPozo').classList.add('translate-x-full');
+      }
+      function guardarVenta() {
+        if (!tanqueroSeleccionado) return;
+
+        const vol = parseFloat(document.getElementById('volumenInput').value || 0);
+        if (vol <= 0) return;
+
+        if (vol > tanqueroSeleccionado.capMax) {
+          alert('El volumen excede la capacidad máxima del tanquero (' + tanqueroSeleccionado.capMax + ' m³)');
+          return;
+        }
+
+        const pozo = operadorActual.pozo;
+        const valor = vol * TARIFA_TANQUERO;
+        const now = new Date();
+        const fecha = `Hoy, ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+        ventas.unshift({
+          fecha,
+          pozo,
+          ruc: tanqueroSeleccionado.ruc,
+          nombre: tanqueroSeleccionado.nombre,
+          placa: tanqueroSeleccionado.placa,
+          vol,
+          valor,
+        });
+
+        renderVentas();
+        cerrarRegistro();
+
+        // Simular notificación Toast
+        setTimeout(() => alert('Despacho registrado correctamente. El cobro de $' + valor.toFixed(2) + ' se aplicará en la próxima planilla del RUC ' + tanqueroSeleccionado.ruc), 300);
+      }
+
+      // Inicializar Vista de Operador
+      document.getElementById('operadorNombreDisplay').textContent = operadorActual.nombre;
+      document.getElementById('operadorPozoDisplay').textContent = operadorActual.pozo;
+      renderVentas();
+    </script>
+  </body>
+</html>

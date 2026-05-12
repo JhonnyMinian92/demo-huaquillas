@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Comercialización - Aguas Huaquillas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-50 h-screen flex flex-col font-sans">
+    <header class="bg-white border-b p-4 flex justify-between items-center">
+      <h1 class="text-xl font-bold text-slate-800">💼 Gestión Comercial y Contratos</h1>
+      <div class="flex gap-2">
+        <button onclick="abrirDrawerEspecies()" class="bg-slate-100 hover:bg-slate-200 border border-slate-300 transition text-slate-700 px-4 py-2 rounded-lg font-bold text-sm">Catálogo de Especies</button>
+        <button onclick="abrirDrawerContrato('nuevo')" class="bg-blue-600 hover:bg-blue-700 transition text-white px-4 py-2 rounded-lg font-bold text-sm">+ Nuevo Contrato</button>
+      </div>
+    </header>
+
+    <main class="flex-1 flex overflow-hidden relative">
+      <!-- SIDEBAR (LISTA DE CONTRATOS) -->
+      <div class="w-1/3 bg-white border-r flex flex-col">
+        <div class="p-4 bg-slate-50 border-b">
+          <div class="relative">
+            <input type="text" id="buscarContratoInput" oninput="filtrarContratos()" placeholder="Buscar por Nombres, Cédula o Nro..." class="w-full p-3 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition" autocomplete="off" />
+            <span class="absolute right-3 top-3 text-slate-400">🔍</span>
+          </div>
+        </div>
+        <div id="listaContratos" class="flex-1 overflow-y-auto">
+          <!-- Renderizado por JS -->
+        </div>
+      </div>
+
+      <!-- MAIN DETAIL (VISTA DE CONTRATO) -->
+      <div class="w-2/3 p-8 overflow-y-auto">
+        <div id="vistaVacia" class="h-full flex flex-col items-center justify-center text-slate-400">
+          <span class="text-6xl mb-4">📑</span>
+          <p class="text-lg font-bold">Seleccione un contrato para ver sus detalles</p>
+        </div>
+
+        <div id="vistaDetalle" class="hidden bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+          <div class="flex justify-between items-start border-b pb-6 mb-6">
+            <div>
+              <p class="text-xs font-bold text-blue-600 uppercase tracking-wide mb-1" id="detNumContrato">CONTRATO #000</p>
+              <h2 class="text-2xl font-black text-slate-800" id="detNombre">NOMBRE CLIENTE</h2>
+              <p class="text-sm font-mono text-slate-500 mt-1" id="detCedula">C.I: 0000000000</p>
+            </div>
+            <div class="flex flex-col items-end gap-2">
+              <span id="detEstado" class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">ACTIVO</span>
+              <button onclick="abrirDrawerContrato('editar')" class="text-sm font-bold text-blue-600 hover:underline">✏️ Editar Contrato</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-6 mb-8">
+            <div>
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Categoría de Servicio</label>
+              <p class="text-base font-bold text-slate-800 mt-1" id="detCategoria">Doméstico</p>
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Tipo de Tarifa</label>
+              <p class="text-base font-bold text-slate-800 mt-1" id="detTarifa">Con Medidor</p>
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Número de Medidor</label>
+              <p class="text-base font-bold font-mono text-slate-800 mt-1" id="detMedidor">AH-9921</p>
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Dirección del Predio</label>
+              <p class="text-sm font-bold text-slate-800 mt-1" id="detDireccion">Av. Principal y Secundaria</p>
+            </div>
+          </div>
+
+          <div class="border-t border-slate-100 pt-6">
+            <h3 class="font-bold text-slate-700 mb-4 text-sm uppercase tracking-wide">Beneficios Legales Aplicados</h3>
+            <div id="detBeneficios" class="flex items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <div>
+                <p class="font-bold text-slate-500">Ningún beneficio aplicado</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OVERLAY Y SIDE-DRAWERS (ZERO MODALS) -->
+      <div id="overlay" class="fixed inset-0 bg-slate-900/40 opacity-0 pointer-events-none transition z-40" onclick="cerrarDrawers()"></div>
+
+      <!-- Drawer Formulario de Contrato -->
+      <aside id="drawerContrato" class="fixed top-0 right-0 w-full max-w-md h-full bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex flex-col">
+        <div class="p-5 border-b flex justify-between items-center bg-slate-50">
+          <h2 class="font-bold text-lg text-slate-800" id="drawerContratoTitulo">Nuevo Contrato</h2>
+          <button onclick="cerrarDrawers()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-600 hover:bg-slate-300 font-bold">✕</button>
+        </div>
+        <div class="p-6 flex-1 overflow-y-auto space-y-5">
+          <input type="hidden" id="formContratoId" />
+
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Cédula / RUC del Solicitante</label>
+            <input type="text" id="formCedula" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono" placeholder="070..." />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Nombres / Razón Social</label>
+            <input type="text" id="formNombre" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-800" placeholder="Ej. Juan Pérez" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Dirección del Predio</label>
+            <input type="text" id="formDireccion" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Barrio / Calle" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Categoría</label>
+              <select id="formCategoria" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-semibold text-slate-700 bg-white">
+                <option value="Doméstico">Doméstico</option>
+                <option value="Comercial">Comercial</option>
+                <option value="Industrial">Industrial</option>
+                <option value="Oficial">Oficial / Público</option>
+                <option value="Tanquero">Tanquero</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Tarifa</label>
+              <select id="formTarifa" onchange="toggleMedidorInput()" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-semibold text-slate-700 bg-white">
+                <option value="Con Medidor">Con Medidor</option>
+                <option value="Base Fija">Base Fija (Sin Medidor)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="containerMedidor">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Número de Medidor (Físico)</label>
+            <input type="text" id="formMedidor" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono uppercase" placeholder="AH-XXXX" />
+          </div>
+
+          <div class="pt-4 border-t border-slate-200">
+            <label class="flex items-start gap-3 cursor-pointer bg-amber-50 border border-amber-200 p-3 rounded-xl">
+              <input type="checkbox" id="formTerceraEdad" class="mt-1 w-5 h-5 accent-amber-600" />
+              <div>
+                <p class="text-sm font-bold text-amber-900">Aplicar 50% Ley Tercera Edad</p>
+                <p class="text-[11px] text-amber-700 mt-1">Requiere validación de cédula con Registro Civil.</p>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="p-5 border-t bg-slate-50">
+          <button onclick="guardarContrato()" class="w-full bg-blue-600 hover:bg-blue-700 transition text-white font-bold py-3 rounded-xl shadow-md">Guardar Contrato</button>
+        </div>
+      </aside>
+
+      <!-- Drawer Catálogo Especies -->
+      <aside id="drawerEspecie" class="fixed top-0 right-0 w-full max-w-md h-full bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex flex-col">
+        <div class="p-5 border-b flex justify-between items-center bg-slate-50">
+          <h2 class="font-bold text-lg text-slate-800">Catálogo de Especies</h2>
+          <button onclick="cerrarDrawers()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-600 hover:bg-slate-300 font-bold">✕</button>
+        </div>
+        <div class="p-6 flex-1 overflow-y-auto space-y-5">
+          <p class="text-sm text-slate-500">Gestione los tipos de trámites y especies que pueden ser vendidos en Recaudación.</p>
+
+          <!-- Formulario Agregar -->
+          <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl space-y-3">
+            <h3 class="font-bold text-blue-800 text-sm">Añadir Nueva Especie</h3>
+            <input type="text" id="nuevaEspecieNombre" placeholder="Nombre de la especie..." class="w-full p-2 border border-blue-200 rounded-md text-sm outline-none focus:ring-2 focus:ring-blue-500" />
+            <div class="flex gap-2">
+              <input type="number" id="nuevaEspeciePrecio" placeholder="Precio ($)" step="0.01" class="w-1/2 p-2 border border-blue-200 rounded-md text-sm outline-none focus:ring-2 focus:ring-blue-500" />
+              <button onclick="agregarEspecie()" class="w-1/2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md text-sm transition">Guardar</button>
+            </div>
+          </div>
+
+          <!-- Lista Existente -->
+          <div>
+            <h3 class="font-bold text-slate-700 text-xs uppercase tracking-wide mb-3">Especies Registradas</h3>
+            <div id="listaEspecies" class="space-y-2">
+              <!-- Renderizado por JS -->
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full text-sm font-bold opacity-0 transition-opacity pointer-events-none z-50 whitespace-nowrap shadow-xl"></div>
+
+    <script>
+      let contratos = [
+        { id: '1042', cedula: '0706323193', nombre: 'DOMINGO RAMÓN SANTOS', direccion: 'Barrio Central, C. Sucre', categoria: 'Doméstico', tarifa: 'Con Medidor', medidor: 'AH-8812', estado: 'Pendiente', terceraEdad: false },
+        { id: '1043', cedula: '0992874412001', nombre: 'COMERCIAL LOS ANDES S.A.', direccion: 'Av. Principal 123', categoria: 'Comercial', tarifa: 'Con Medidor', medidor: 'AH-9004', estado: 'Activo', terceraEdad: false },
+        { id: '1044', cedula: '0702381199', nombre: 'MARÍA GÓMEZ VÉLEZ', direccion: 'Ciudadela El Paraíso', categoria: 'Doméstico', tarifa: 'Base Fija', medidor: '', estado: 'Activo', terceraEdad: true },
+        { id: '1045', cedula: '0706323194001', nombre: 'JUAN CARLOS LÓPEZ (AGUA SUR)', direccion: 'Vía Panamericana Km 2', categoria: 'Tanquero', tarifa: 'Con Medidor', medidor: 'TQ-001', estado: 'Activo', terceraEdad: false },
+      ];
+
+      let especies = [
+        { id: 1, nombre: 'Solicitud de Servicio', precio: 1.0 },
+        { id: 2, nombre: 'Certificado de No Adeudar', precio: 2.0 },
+        { id: 3, nombre: 'Copia Certificada', precio: 3.0 },
+        { id: 4, nombre: 'Formulario de Convenio de Pago', precio: 5.0 },
+      ];
+
+      let contratoSeleccionado = null;
+
+      function renderContratos(filtro = '') {
+        const lista = document.getElementById('listaContratos');
+        const f = filtro.toLowerCase();
+
+        const filtrados = contratos.filter((c) => c.nombre.toLowerCase().includes(f) || c.cedula.includes(f) || c.id.includes(f));
+
+        if (filtrados.length === 0) {
+          lista.innerHTML = '<div class="p-6 text-center text-slate-500 font-bold">No se encontraron contratos.</div>';
+          return;
+        }
+
+        lista.innerHTML = filtrados
+          .map(
+            (c) => `
+          <div onclick="seleccionarContrato('${c.id}')" class="p-4 border-b border-slate-100 cursor-pointer transition ${contratoSeleccionado === c.id ? 'bg-blue-50 border-l-4 border-l-blue-600' : 'hover:bg-slate-50 border-l-4 border-l-transparent'}">
+            <div class="flex justify-between items-start mb-1">
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Contrato #${c.id}</p>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded ${c.estado === 'Activo' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${c.estado}</span>
+            </div>
+            <h3 class="font-bold text-slate-800 text-sm truncate">${c.nombre}</h3>
+            <p class="text-xs text-slate-500 mt-1 truncate">${c.categoria} | C.I: ${c.cedula}</p>
+          </div>
+        `,
+          )
+          .join('');
+      }
+
+      function filtrarContratos() {
+        renderContratos(document.getElementById('buscarContratoInput').value);
+      }
+
+      function seleccionarContrato(id) {
+        contratoSeleccionado = id;
+        const c = contratos.find((x) => x.id === id);
+
+        document.getElementById('vistaVacia').classList.add('hidden');
+        document.getElementById('vistaDetalle').classList.remove('hidden');
+
+        document.getElementById('detNumContrato').textContent = `CONTRATO #${c.id}`;
+        document.getElementById('detNombre').textContent = c.nombre;
+        document.getElementById('detCedula').textContent = `C.I/RUC: ${c.cedula}`;
+        document.getElementById('detEstado').textContent = c.estado;
+        document.getElementById('detEstado').className = `px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm ${c.estado === 'Activo' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`;
+
+        document.getElementById('detCategoria').textContent = c.categoria;
+        document.getElementById('detTarifa').textContent = c.tarifa;
+        document.getElementById('detMedidor').textContent = c.medidor || 'N/A';
+        document.getElementById('detDireccion').textContent = c.direccion;
+
+        const bnf = document.getElementById('detBeneficios');
+        if (c.terceraEdad) {
+          bnf.innerHTML = `<div class="w-10 h-10 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center text-lg font-bold">👴</div><div><p class="font-bold text-amber-900 text-sm">Ley de Tercera Edad Aplicada (50%)</p><p class="text-xs text-amber-700">Validado en sistema.</p></div>`;
+          bnf.className = 'flex items-center gap-4 bg-amber-50 p-4 rounded-xl border border-amber-200';
+        } else {
+          bnf.innerHTML = `<div><p class="font-bold text-slate-500 text-sm">Ningún beneficio legal especial aplicado a este contrato.</p></div>`;
+          bnf.className = 'flex items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200';
+        }
+
+        renderContratos(document.getElementById('buscarContratoInput').value); // refrescar para marcar activo
+      }
+
+      function abrirDrawerContrato(modo) {
+        const isEdit = modo === 'editar' && contratoSeleccionado;
+        document.getElementById('drawerContratoTitulo').textContent = isEdit ? `Editar Contrato #${contratoSeleccionado}` : 'Nuevo Contrato';
+
+        if (isEdit) {
+          const c = contratos.find((x) => x.id === contratoSeleccionado);
+          document.getElementById('formContratoId').value = c.id;
+          document.getElementById('formCedula').value = c.cedula;
+          document.getElementById('formNombre').value = c.nombre;
+          document.getElementById('formDireccion').value = c.direccion;
+          document.getElementById('formCategoria').value = c.categoria;
+          document.getElementById('formTarifa').value = c.tarifa;
+          document.getElementById('formMedidor').value = c.medidor;
+          document.getElementById('formTerceraEdad').checked = c.terceraEdad;
+        } else {
+          document.getElementById('formContratoId').value = '';
+          document.getElementById('formCedula').value = '';
+          document.getElementById('formNombre').value = '';
+          document.getElementById('formDireccion').value = '';
+          document.getElementById('formCategoria').value = 'Doméstico';
+          document.getElementById('formTarifa').value = 'Con Medidor';
+          document.getElementById('formMedidor').value = '';
+          document.getElementById('formTerceraEdad').checked = false;
+        }
+
+        toggleMedidorInput();
+        document.getElementById('overlay').classList.remove('opacity-0', 'pointer-events-none');
+        document.getElementById('drawerContrato').classList.remove('translate-x-full');
+      }
+
+      function toggleMedidorInput() {
+        const tarifa = document.getElementById('formTarifa').value;
+        const container = document.getElementById('containerMedidor');
+        if (tarifa === 'Con Medidor') {
+          container.classList.remove('hidden');
+        } else {
+          container.classList.add('hidden');
+          document.getElementById('formMedidor').value = '';
+        }
+      }
+
+      function guardarContrato() {
+        const idEdit = document.getElementById('formContratoId').value;
+        const data = {
+          id: idEdit || Math.floor(1000 + Math.random() * 9000).toString(),
+          cedula: document.getElementById('formCedula').value || 'S/N',
+          nombre: document.getElementById('formNombre').value.toUpperCase() || 'CLIENTE NUEVO',
+          direccion: document.getElementById('formDireccion').value || '-',
+          categoria: document.getElementById('formCategoria').value,
+          tarifa: document.getElementById('formTarifa').value,
+          medidor: document.getElementById('formMedidor').value.toUpperCase(),
+          terceraEdad: document.getElementById('formTerceraEdad').checked,
+          estado: idEdit ? contratos.find((c) => c.id === idEdit).estado : 'Pendiente',
+        };
+
+        if (idEdit) {
+          const idx = contratos.findIndex((c) => c.id === idEdit);
+          contratos[idx] = data;
+          mostrarToast('Contrato actualizado correctamente');
+        } else {
+          contratos.unshift(data);
+          mostrarToast('Nuevo contrato registrado');
+        }
+
+        cerrarDrawers();
+        renderContratos(document.getElementById('buscarContratoInput').value);
+        seleccionarContrato(data.id);
+      }
+
+      function abrirDrawerEspecies() {
+        renderEspecies();
+        document.getElementById('overlay').classList.remove('opacity-0', 'pointer-events-none');
+        document.getElementById('drawerEspecie').classList.remove('translate-x-full');
+      }
+
+      function renderEspecies() {
+        document.getElementById('listaEspecies').innerHTML = especies
+          .map(
+            (e) => `
+          <div class="flex justify-between items-center bg-white border border-slate-200 p-3 rounded-lg shadow-sm">
+            <div class="font-semibold text-slate-800 text-sm truncate pr-2">${e.nombre}</div>
+            <div class="font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded text-sm">$${e.precio.toFixed(2)}</div>
+          </div>
+        `,
+          )
+          .join('');
+      }
+
+      function agregarEspecie() {
+        const nombre = document.getElementById('nuevaEspecieNombre').value.trim();
+        const precio = parseFloat(document.getElementById('nuevaEspeciePrecio').value);
+        if (!nombre || isNaN(precio) || precio <= 0) return mostrarToast('Ingrese datos válidos');
+
+        especies.push({ id: Date.now(), nombre, precio });
+        document.getElementById('nuevaEspecieNombre').value = '';
+        document.getElementById('nuevaEspeciePrecio').value = '';
+        renderEspecies();
+        mostrarToast('Especie agregada al catálogo');
+      }
+
+      function cerrarDrawers() {
+        document.getElementById('overlay').classList.add('opacity-0', 'pointer-events-none');
+        document.getElementById('drawerContrato').classList.add('translate-x-full');
+        document.getElementById('drawerEspecie').classList.add('translate-x-full');
+      }
+
+      function mostrarToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.remove('opacity-0');
+        setTimeout(() => t.classList.add('opacity-0'), 2500);
+      }
+
+      // Inicializar
+      renderContratos();
+    </script>
+  </body>
+</html>
